@@ -1,0 +1,96 @@
+/* Additional custom styles beyond Tailwind CSS */
+
+/* Animation for voice recognition */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+}
+
+@keyframes wave {
+    0% { transform: translateY(0px); }
+    25% { transform: translateY(-10px); }
+    50% { transform: translateY(0px); }
+    75% { transform: translateY(10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Voice activation animations */
+.voice-active-btn {
+    animation: glow 2s infinite, pulse 1.5s infinite;
+}
+
+.voice-active-icon {
+    animation: wave 2s infinite;
+    display: inline-block;
+}
+
+#startVoiceBtn:hover i,
+#stopVoiceBtn:hover i {
+    animation: pulse 1s infinite;
+}
+
+/* When voice is active */
+.voice-active {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    transition: all 0.3s ease;
+}
+
+/* Transition effects for showing/hiding sections */
+#voiceInputStatus,
+#formInput,
+#planResults {
+    transition: opacity 0.5s ease;
+}
+
+/* Custom scrollbar for a nicer look */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Custom focus styles for form elements */
+input:focus, 
+select:focus, 
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    #startVoiceBtn, 
+    #showFormBtn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
