@@ -67,6 +67,59 @@
             left: 0;
             right: 0;
             bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .exercise-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .exercise-modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .exercise-modal.active .exercise-modal-content {
+            transform: translateY(0);
+        }
+        
+        /* Exercise image styles */
+        .exercise-image {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto 1rem auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .instruction-row {
+            border-top: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            transition: all 0.3s ease;
+        }
+        
+        /* Exercise modal */
+        .exercise-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-color: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
@@ -111,7 +164,7 @@
                     <a href="#features" class="text-white hover:text-blue-200 transition">Features</a>
                     <a href="#how-it-works" class="text-white hover:text-blue-200 transition">How It Works</a>
                     <div class="relative ml-4">
-                        <select id="language-selector" class="bg-indigo-700 border border-indigo-500 text-white rounded px-3 py-1 appearance-none cursor-pointer pr-8">
+                        <select id="language-selector" onchange="changeLanguage(this.value)" class="bg-indigo-700 border border-indigo-500 text-white rounded px-3 py-1 appearance-none cursor-pointer pr-8">
                             <option value="en">English</option>
                             <option value="az">Azərbaycan</option>
                             <option value="tr">Türkçe</option>
@@ -432,6 +485,626 @@
 
     {% load static %}
     <script>
+        // Translations for the entire website UI
+        const siteTranslations = {
+            en: {
+                // Header and navigation
+                header_title: "FitPlan Builder",
+                header_subtitle: "Your personalized fitness journey starts here",
+                nav_features: "Features",
+                nav_how_it_works: "How It Works",
+                
+                // Main section headers
+                build_title: "Build Your Custom Fitness Plan",
+                build_description: "Answer a few simple questions and we'll create a personalized workout routine that fits your goals, schedule, and preferences.",
+                input_method: "Voice or Text Input",
+                input_description: "Choose how you'd like to provide your information.",
+                
+                // Buttons
+                voice_btn: "Start Voice Input",
+                form_btn: "Use Text Form",
+                generate_btn: "Generate My Fitness Plan",
+                download_btn: "Download PDF",
+                new_plan_btn: "Create New Plan",
+                
+                // Voice UI
+                voice_active: "Voice Recognition Active",
+                voice_listening: "Listening...",
+                voice_unavailable: "Speech recognition not available",
+                voice_use_form: "Please use the form input instead.",
+                voice_switch_form: "Switch to Form",
+                
+                // Form labels
+                form_name: "Your Name",
+                form_goal: "Main Fitness Goal",
+                form_days: "Days Per Week Available",
+                form_level: "Experience Level",
+                form_preference: "Workout Preference",
+                form_restrictions: "Any Physical Restrictions?",
+                form_restrictions_placeholder: "e.g., knee issues, back pain, etc. Leave blank if none.",
+                
+                // Form options - Goals
+                goal_general: "General Fitness & Health",
+                goal_weight_loss: "Weight Loss",
+                goal_muscle: "Build Muscle",
+                goal_strength: "Increase Strength",
+                goal_endurance: "Improve Endurance",
+                
+                // Form options - Levels
+                level_beginner: "Beginner",
+                level_intermediate: "Intermediate",
+                level_advanced: "Advanced",
+                
+                // Form options - Preferences
+                pref_home: "Home Workouts",
+                pref_gym: "Gym Workouts",
+                pref_outdoor: "Outdoor Workouts",
+                
+                // Days
+                days_2: "2 days",
+                days_3: "3 days",
+                days_4: "4 days",
+                days_5: "5 days",
+                days_6: "6 days",
+                
+                // Plan display
+                schedule_title: "Weekly Schedule:",
+                diet_title: "Dietary Guidelines",
+                
+                // Feature section
+                features_title: "Achieve Your Fitness Goals",
+                feature_1_title: "Personalized Workouts",
+                feature_1_desc: "Get a custom plan tailored to your goals, experience, and available time.",
+                feature_2_title: "Flexible Scheduling",
+                feature_2_desc: "Fit your workouts into your busy life with adaptable schedules.",
+                feature_3_title: "Nutrition Guidance",
+                feature_3_desc: "Basic diet recommendations to complement your fitness routine.",
+                feature_4_title: "Downloadable PDF",
+                feature_4_desc: "Take your plan anywhere - print it or keep it on your phone.",
+                
+                // How it works section
+                how_works_title: "How FitPlan Builder Works",
+                step_1_title: "1. Tell Us About Yourself",
+                step_1_desc: "Use our voice interface or simple form to share your fitness goals and preferences.",
+                step_2_title: "2. We Create Your Plan",
+                step_2_desc: "Our system generates a tailored workout plan based on your unique requirements.",
+                step_3_title: "3. Start Your Journey",
+                step_3_desc: "Download your plan as a PDF and begin your path to a healthier, stronger you.",
+                
+                // Tips section
+                tips_title: "Fitness Tips for Success",
+                tip_1_title: "Consistency Over Intensity",
+                tip_1_desc: "Regular, moderate workouts are better than occasional intense sessions.",
+                tip_2_title: "Progressive Overload",
+                tip_2_desc: "Gradually increase intensity to continuously challenge your body.",
+                tip_3_title: "Proper Nutrition",
+                tip_3_desc: "Your diet plays a crucial role in achieving your fitness goals.",
+                tip_4_title: "Rest and Recovery",
+                tip_4_desc: "Allow your muscles time to repair and grow stronger.",
+                tip_5_title: "Hydration Matters",
+                tip_5_desc: "Drink plenty of water before, during, and after workouts.",
+                tip_6_title: "Track Your Progress",
+                tip_6_desc: "Keep a fitness journal to see how far you've come.",
+                
+                // Footer
+                footer_title: "FitPlan Builder",
+                footer_subtitle: "Your personalized fitness journey",
+                footer_copyright: "© 2023 FitPlan Builder. All rights reserved.",
+                footer_demo: "This is a demonstration application."
+            },
+            
+            az: {
+                // Header and navigation
+                header_title: "FitPlan Qurucusu",
+                header_subtitle: "Şəxsi fitness səyahətiniz buradan başlayır",
+                nav_features: "Xüsusiyyətlər",
+                nav_how_it_works: "Necə İşləyir",
+                
+                // Main section headers
+                build_title: "Şəxsi Fitness Planınızı Qurun",
+                build_description: "Bir neçə sadə suala cavab verin və biz sizin hədəflərinizə, cədvəlinizə və üstünlüklərinizə uyğun şəxsi məşq rejimi yaradacağıq.",
+                input_method: "Səs və ya Mətn Girişi",
+                input_description: "Məlumatlarınızı necə təqdim etmək istədiyinizi seçin.",
+                
+                // Buttons
+                voice_btn: "Səs Girişini Başlat",
+                form_btn: "Mətn Formasından İstifadə Et",
+                generate_btn: "Fitness Planımı Yarat",
+                download_btn: "PDF Yüklə",
+                new_plan_btn: "Yeni Plan Yarat",
+                
+                // Voice UI
+                voice_active: "Səs Tanıma Aktivdir",
+                voice_listening: "Dinləyir...",
+                voice_unavailable: "Səs tanıma mövcud deyil",
+                voice_use_form: "Zəhmət olmasa, əvəzində formadan istifadə edin.",
+                voice_switch_form: "Formaya Keç",
+                
+                // Form labels
+                form_name: "Adınız",
+                form_goal: "Əsas Fitness Hədəfi",
+                form_days: "Həftədə Neçə Gün Uyğundur",
+                form_level: "Təcrübə Səviyyəsi",
+                form_preference: "Məşq Üstünlüyü",
+                form_restrictions: "Hər hansı Fiziki Məhdudiyyətlər?",
+                form_restrictions_placeholder: "məs., diz problemləri, bel ağrısı və s. Yoxdursa boş saxlayın.",
+                
+                // Form options - Goals
+                goal_general: "Ümumi Fitness və Sağlamlıq",
+                goal_weight_loss: "Çəki İtirmək",
+                goal_muscle: "Əzələ Qurmaq",
+                goal_strength: "Güc Artırmaq",
+                goal_endurance: "Dözümlülüyü Artırmaq",
+                
+                // Form options - Levels
+                level_beginner: "Başlanğıc",
+                level_intermediate: "Orta",
+                level_advanced: "Təcrübəli",
+                
+                // Form options - Preferences
+                pref_home: "Evdə Məşqlər",
+                pref_gym: "İdman Zalında Məşqlər",
+                pref_outdoor: "Açıq Havada Məşqlər",
+                
+                // Days
+                days_2: "2 gün",
+                days_3: "3 gün",
+                days_4: "4 gün",
+                days_5: "5 gün",
+                days_6: "6 gün",
+                
+                // Plan display
+                schedule_title: "Həftəlik Cədvəl:",
+                diet_title: "Qidalanma Təlimatları",
+                
+                // Feature section
+                features_title: "Fitness Hədəflərinizə Çatın",
+                feature_1_title: "Fərdiləşdirilmiş Məşqlər",
+                feature_1_desc: "Hədəflərinizə, təcrübənizə və mövcud vaxtınıza uyğun plan əldə edin.",
+                feature_2_title: "Çevik Planlaşdırma",
+                feature_2_desc: "Məşqlərinizi gərgin həyatınıza uyğunlaşdırın.",
+                feature_3_title: "Qidalanma Məsləhətləri",
+                feature_3_desc: "Fitness rejiminizi tamamlamaq üçün əsas qida tövsiyələri.",
+                feature_4_title: "Yüklənə bilən PDF",
+                feature_4_desc: "Planınızı hər yerə aparın - çap edin və ya telefonunuzda saxlayın.",
+                
+                // How it works section
+                how_works_title: "FitPlan Qurucusu Necə İşləyir",
+                step_1_title: "1. Özünüz Haqqında Bizə Deyin",
+                step_1_desc: "Səs interfeysi və ya sadə formadan istifadə edərək fitness hədəflərinizi və üstünlüklərinizi paylaşın.",
+                step_2_title: "2. Planınızı Yaradırıq",
+                step_2_desc: "Sistemimiz unikal tələblərinizə əsasən xüsusi məşq planı yaradır.",
+                step_3_title: "3. Səyahətinizə Başlayın",
+                step_3_desc: "Planınızı PDF kimi yükləyin və daha sağlam, daha güclü bir sizə doğru yolunuza başlayın.",
+                
+                // Tips section
+                tips_title: "Uğurlu Fitness Üçün Məsləhətlər",
+                tip_1_title: "İntensivlikdən Daha Çox Ardıcıllıq",
+                tip_1_desc: "Müntəzəm, orta səviyyəli məşqlər ara-sıra intensiv məşqlərdən daha yaxşıdır.",
+                tip_2_title: "Tədricən Artırma",
+                tip_2_desc: "Bədəninizi daim çətinləşdirmək üçün tədricən intensivliyi artırın.",
+                tip_3_title: "Düzgün Qidalanma",
+                tip_3_desc: "Qida rejimi fitness hədəflərinizə çatmaqda mühüm rol oynayır.",
+                tip_4_title: "İstirahət və Bərpa",
+                tip_4_desc: "Əzələlərinizə bərpa olunmaq və güclənmək üçün vaxt verin.",
+                tip_5_title: "Hidratasiya Vacibdir",
+                tip_5_desc: "Məşqdən əvvəl, məşq zamanı və sonra kifayət qədər su için.",
+                tip_6_title: "İrəliləyişinizi İzləyin",
+                tip_6_desc: "Nə qədər irəlilədiyinizi görmək üçün fitness jurnalı saxlayın.",
+                
+                // Footer
+                footer_title: "FitPlan Qurucusu",
+                footer_subtitle: "Şəxsi fitness səyahətiniz",
+                footer_copyright: "© 2023 FitPlan Qurucusu. Bütün hüquqlar qorunur.",
+                footer_demo: "Bu bir nümayiş tətbiqidir."
+            },
+            
+            tr: {
+                // Header and navigation
+                header_title: "FitPlan Oluşturucu",
+                header_subtitle: "Kişiselleştirilmiş fitness yolculuğunuz burada başlıyor",
+                nav_features: "Özellikler",
+                nav_how_it_works: "Nasıl Çalışır",
+                
+                // Main section headers
+                build_title: "Özel Fitness Planınızı Oluşturun",
+                build_description: "Birkaç basit soruyu yanıtlayın ve hedeflerinize, programınıza ve tercihlerinize uygun kişiselleştirilmiş bir antrenman rutini oluşturalım.",
+                input_method: "Ses veya Metin Girişi",
+                input_description: "Bilgilerinizi nasıl sağlamak istediğinizi seçin.",
+                
+                // Buttons
+                voice_btn: "Ses Girişini Başlat",
+                form_btn: "Metin Formunu Kullan",
+                generate_btn: "Fitness Planımı Oluştur",
+                download_btn: "PDF İndir",
+                new_plan_btn: "Yeni Plan Oluştur",
+                
+                // Voice UI
+                voice_active: "Ses Tanıma Aktif",
+                voice_listening: "Dinliyor...",
+                voice_unavailable: "Ses tanıma kullanılamıyor",
+                voice_use_form: "Lütfen form girişini kullanın.",
+                voice_switch_form: "Forma Geç",
+                
+                // Form labels
+                form_name: "Adınız",
+                form_goal: "Ana Fitness Hedefi",
+                form_days: "Haftada Kaç Gün Uygun",
+                form_level: "Deneyim Seviyesi",
+                form_preference: "Antrenman Tercihi",
+                form_restrictions: "Herhangi Bir Fiziksel Kısıtlama?",
+                form_restrictions_placeholder: "örn., diz sorunları, sırt ağrısı vb. Yoksa boş bırakın.",
+                
+                // Form options - Goals
+                goal_general: "Genel Fitness ve Sağlık",
+                goal_weight_loss: "Kilo Kaybı",
+                goal_muscle: "Kas Yapma",
+                goal_strength: "Güç Artırma",
+                goal_endurance: "Dayanıklılık Geliştirme",
+                
+                // Form options - Levels
+                level_beginner: "Başlangıç",
+                level_intermediate: "Orta",
+                level_advanced: "İleri",
+                
+                // Form options - Preferences
+                pref_home: "Ev Antrenmanları",
+                pref_gym: "Spor Salonu Antrenmanları",
+                pref_outdoor: "Açık Hava Antrenmanları",
+                
+                // Days
+                days_2: "2 gün",
+                days_3: "3 gün",
+                days_4: "4 gün",
+                days_5: "5 gün",
+                days_6: "6 gün",
+                
+                // Plan display
+                schedule_title: "Haftalık Program:",
+                diet_title: "Beslenme Kılavuzu",
+                
+                // Feature section
+                features_title: "Fitness Hedeflerinize Ulaşın",
+                feature_1_title: "Kişiselleştirilmiş Antrenmanlar",
+                feature_1_desc: "Hedeflerinize, deneyiminize ve mevcut zamanınıza uygun özel bir plan elde edin.",
+                feature_2_title: "Esnek Programlama",
+                feature_2_desc: "Antrenmanlarınızı yoğun hayatınıza uygun hale getirin.",
+                feature_3_title: "Beslenme Rehberliği",
+                feature_3_desc: "Fitness rutininizi tamamlamak için temel diyet önerileri.",
+                feature_4_title: "İndirilebilir PDF",
+                feature_4_desc: "Planınızı her yere götürün - yazdırın veya telefonunuzda saklayın.",
+                
+                // How it works section
+                how_works_title: "FitPlan Oluşturucu Nasıl Çalışır",
+                step_1_title: "1. Kendiniz Hakkında Bize Anlatın",
+                step_1_desc: "Ses arayüzümüzü veya basit formu kullanarak fitness hedeflerinizi ve tercihlerinizi paylaşın.",
+                step_2_title: "2. Planınızı Oluşturuyoruz",
+                step_2_desc: "Sistemimiz, benzersiz gereksinimlerinize dayalı özel bir antrenman planı oluşturur.",
+                step_3_title: "3. Yolculuğunuza Başlayın",
+                step_3_desc: "Planınızı PDF olarak indirin ve daha sağlıklı, daha güçlü bir kendinize giden yola başlayın.",
+                
+                // Tips section
+                tips_title: "Başarılı Fitness İçin İpuçları",
+                tip_1_title: "Yoğunluktan Ziyade Tutarlılık",
+                tip_1_desc: "Düzenli, orta yoğunlukta antrenmanlar, ara sıra yapılan yoğun seanslardan daha iyidir.",
+                tip_2_title: "Kademeli Artış",
+                tip_2_desc: "Vücudunuzu sürekli zorlamak için yoğunluğu kademeli olarak artırın.",
+                tip_3_title: "Doğru Beslenme",
+                tip_3_desc: "Beslenmeniz fitness hedeflerinize ulaşmada çok önemli bir rol oynar.",
+                tip_4_title: "Dinlenme ve İyileşme",
+                tip_4_desc: "Kaslarınızın iyileşmesi ve güçlenmesi için zaman tanıyın.",
+                tip_5_title: "Hidrasyon Önemlidir",
+                tip_5_desc: "Antrenman öncesi, sırası ve sonrasında bol su için.",
+                tip_6_title: "İlerlemenizi Takip Edin",
+                tip_6_desc: "Ne kadar ilerlediğinizi görmek için bir fitness günlüğü tutun.",
+                
+                // Footer
+                footer_title: "FitPlan Oluşturucu",
+                footer_subtitle: "Kişiselleştirilmiş fitness yolculuğunuz",
+                footer_copyright: "© 2023 FitPlan Oluşturucu. Tüm hakları saklıdır.",
+                footer_demo: "Bu bir demo uygulamasıdır."
+            }
+        };
+        
+        // Current language - check localStorage first, default to 'en'
+        let currentLanguage = localStorage.getItem('preferredLanguage') || 'en';
+        
+        // Set the language selector to match stored preference
+        document.getElementById('language-selector').value = currentLanguage;
+        
+        // Voice recognition questions with more detail and paraphrasing
+        const enhancedQuestions = {
+            en: [
+                { key: 'name', question: "What's your name? I'll use this to personalize your fitness plan." },
+                { key: 'goal', question: "What's your main fitness goal? For example, are you looking to lose weight, build muscle, increase strength, improve endurance, or just maintain general fitness?" },
+                { key: 'days', question: "How many days per week can you commit to working out? It's important to be realistic - anywhere from 2 to 6 days is fine." },
+                { key: 'level', question: "How would you describe your fitness experience level? Are you a beginner just starting out, intermediate with some experience, or advanced with several years of training?" },
+                { key: 'preference', question: "Where do you prefer to workout? At home with minimal equipment, in a fully equipped gym, or do you prefer outdoor activities?" },
+                { key: 'restrictions', question: "Do you have any physical restrictions or limitations I should know about when creating your plan? Things like joint issues, injuries, or medical conditions? If none, just say 'none'." }
+            ],
+            az: [
+                { key: 'name', question: "Adınız nədir? Fitness planınızı fərdiləşdirmək üçün istifadə edəcəyəm." },
+                { key: 'goal', question: "Əsas fitness hədəfiniz nədir? Məsələn, çəki itirmək, əzələ qurmaq, güc artırmaq, dözümlülüyü artırmaq, yoxsa sadəcə ümumi fitnessi qorumaq istəyirsiniz?" },
+                { key: 'days', question: "Həftədə neçə gün məşq etməyə vaxt ayıra bilərsiniz? Realist olmaq vacibdir - 2-dən 6 günə qədər hər hansı bir seçim məqbuldur." },
+                { key: 'level', question: "Fitness təcrübə səviyyənizi necə təsvir edərdiniz? Yeni başlayan birisi, müəyyən təcrübəsi olan orta səviyyəli, yoxsa bir neçə illik təlim təcrübəsi olan təcrübəli birisi?" },
+                { key: 'preference', question: "Məşq etməyi harada üstün tutursunuz? Minimal avadanlıqla evdə, tam təchiz edilmiş idman zalında, yoxsa açıq havada fəaliyyətləri seçirsiniz?" },
+                { key: 'restrictions', question: "Planınızı yaradarkən bilməli olduğum hər hansı fiziki məhdudiyyətləriniz var? Oynaq problemləri, zədələr və ya tibbi vəziyyətlər kimi. Yoxdursa, sadəcə 'yox' deyin." }
+            ],
+            tr: [
+                { key: 'name', question: "Adınız nedir? Fitness planınızı kişiselleştirmek için kullanacağım." },
+                { key: 'goal', question: "Ana fitness hedefiniz nedir? Örneğin, kilo vermek, kas yapmak, gücü artırmak, dayanıklılığı geliştirmek veya sadece genel sağlığı korumak mı istiyorsunuz?" },
+                { key: 'days', question: "Haftada kaç gün antrenman yapmaya zaman ayırabilirsiniz? Gerçekçi olmak önemli - 2 günden 6 güne kadar herhangi bir seçim uygundur." },
+                { key: 'level', question: "Fitness deneyim seviyenizi nasıl tanımlarsınız? Yeni başlayan biri, biraz deneyimli orta seviye, yoksa birkaç yıllık eğitim deneyimine sahip ileri seviye mi?" },
+                { key: 'preference', question: "Nerede antrenman yapmayı tercih edersiniz? Minimal ekipmanla evde, tam donanımlı spor salonunda, yoksa açık hava aktivitelerini mi tercih edersiniz?" },
+                { key: 'restrictions', question: "Planınızı oluştururken bilmem gereken herhangi bir fiziksel kısıtlamanız var mı? Eklem sorunları, yaralanmalar veya tıbbi durumlar gibi. Yoksa, sadece 'yok' deyin." }
+            ]
+        };
+        
+        // Function to change the website language
+        function changeLanguage(lang) {
+            if (!lang || !siteTranslations[lang]) {
+                console.error('Invalid language selected:', lang);
+                return;
+            }
+            
+            // Store the selected language
+            currentLanguage = lang;
+            localStorage.setItem('preferredLanguage', lang);
+            
+            // Update all text content in the page
+            updateAllTextContent();
+            
+            // Show feedback to user
+            let message = '';
+            if (lang === 'en') {
+                message = 'Language changed to English!';
+            } else if (lang === 'az') {
+                message = 'Dil Azərbaycancaya dəyişdirildi!';
+            } else if (lang === 'tr') {
+                message = 'Dil Türkçeye değiştirildi!';
+            }
+            
+            showLanguageFeedback(message);
+            
+            // Force voice to reset with new language
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            
+            console.log("Language changed to:", lang);
+        }
+        
+        // Update all text content based on current language
+        function updateAllTextContent() {
+            const translations = siteTranslations[currentLanguage];
+            if (!translations) return;
+            
+            // Update header elements
+            document.querySelector('h1').textContent = translations.header_title;
+            document.querySelector('h1 + p').textContent = translations.header_subtitle;
+            
+            // Update navigation
+            const featuresLink = document.querySelector('a[href="#features"]');
+            if (featuresLink) featuresLink.textContent = translations.nav_features;
+            
+            const howItWorksLink = document.querySelector('a[href="#how-it-works"]');
+            if (howItWorksLink) howItWorksLink.textContent = translations.nav_how_it_works;
+            
+            // Update main building section
+            const buildTitle = document.querySelector('.md\\:w-1\\/2.p-8.md\\:p-12 h2');
+            if (buildTitle) buildTitle.textContent = translations.build_title;
+            
+            const buildDesc = document.querySelector('.md\\:w-1\\/2.p-8.md\\:p-12 p.text-gray-600.mb-8');
+            if (buildDesc) buildDesc.textContent = translations.build_description;
+            
+            // Update input section
+            const inputMethodTitle = document.querySelector('.text-xl.font-semibold.mb-4.flex.items-center span + span, .text-xl.font-semibold.mb-4.flex.items-center');
+            if (inputMethodTitle) inputMethodTitle.textContent = translations.input_method;
+            
+            const inputDesc = document.querySelector('.text-gray-600.mb-4');
+            if (inputDesc) inputDesc.textContent = translations.input_description;
+            
+            // Update buttons
+            const voiceBtn = document.getElementById('startVoiceBtn');
+            if (voiceBtn) {
+                const icon = voiceBtn.querySelector('i').outerHTML;
+                voiceBtn.innerHTML = `${icon} ${translations.voice_btn}`;
+            }
+            
+            const formBtn = document.getElementById('showFormBtn');
+            if (formBtn) {
+                const icon = formBtn.querySelector('i').outerHTML;
+                formBtn.innerHTML = `${icon} ${translations.form_btn}`;
+            }
+            
+            // Update voice status section
+            const voiceActiveText = document.querySelector('#voiceInputStatus .font-medium.mb-2');
+            if (voiceActiveText) voiceActiveText.textContent = translations.voice_active;
+            
+            // Update form labels
+            updateFormLanguage();
+            
+            // Update features section
+            const featuresTitle = document.querySelector('.md\\:w-1\\/2.bg-gradient-to-br.from-blue-500.to-indigo-600 h2');
+            if (featuresTitle) featuresTitle.textContent = translations.features_title;
+            
+            // Update feature items
+            const featureItems = document.querySelectorAll('.md\\:w-1\\/2.bg-gradient-to-br.from-blue-500.to-indigo-600 .space-y-6 .flex.items-start');
+            if (featureItems.length >= 4) {
+                featureItems[0].querySelector('h3').textContent = translations.feature_1_title;
+                featureItems[0].querySelector('p').textContent = translations.feature_1_desc;
+                
+                featureItems[1].querySelector('h3').textContent = translations.feature_2_title;
+                featureItems[1].querySelector('p').textContent = translations.feature_2_desc;
+                
+                featureItems[2].querySelector('h3').textContent = translations.feature_3_title;
+                featureItems[2].querySelector('p').textContent = translations.feature_3_desc;
+                
+                featureItems[3].querySelector('h3').textContent = translations.feature_4_title;
+                featureItems[3].querySelector('p').textContent = translations.feature_4_desc;
+            }
+            
+            // Update "How it works" section
+            const howWorksTitle = document.querySelector('#features h2');
+            if (howWorksTitle) howWorksTitle.textContent = translations.how_works_title;
+            
+            const steps = document.querySelectorAll('#features .grid.grid-cols-1.md\\:grid-cols-3 > div');
+            if (steps.length >= 3) {
+                steps[0].querySelector('h3').textContent = translations.step_1_title;
+                steps[0].querySelector('p').textContent = translations.step_1_desc;
+                
+                steps[1].querySelector('h3').textContent = translations.step_2_title;
+                steps[1].querySelector('p').textContent = translations.step_2_desc;
+                
+                steps[2].querySelector('h3').textContent = translations.step_3_title;
+                steps[2].querySelector('p').textContent = translations.step_3_desc;
+            }
+            
+            // Update Tips section
+            const tipsTitle = document.querySelector('#how-it-works h2');
+            if (tipsTitle) tipsTitle.textContent = translations.tips_title;
+            
+            const tips = document.querySelectorAll('#how-it-works .grid.grid-cols-1.md\\:grid-cols-2 > div');
+            if (tips.length >= 6) {
+                tips[0].querySelector('h3').textContent = translations.tip_1_title;
+                tips[0].querySelector('p').textContent = translations.tip_1_desc;
+                
+                tips[1].querySelector('h3').textContent = translations.tip_2_title;
+                tips[1].querySelector('p').textContent = translations.tip_2_desc;
+                
+                tips[2].querySelector('h3').textContent = translations.tip_3_title;
+                tips[2].querySelector('p').textContent = translations.tip_3_desc;
+                
+                tips[3].querySelector('h3').textContent = translations.tip_4_title;
+                tips[3].querySelector('p').textContent = translations.tip_4_desc;
+                
+                tips[4].querySelector('h3').textContent = translations.tip_5_title;
+                tips[4].querySelector('p').textContent = translations.tip_5_desc;
+                
+                tips[5].querySelector('h3').textContent = translations.tip_6_title;
+                tips[5].querySelector('p').textContent = translations.tip_6_desc;
+            }
+            
+            // Update footer
+            const footerTitle = document.querySelector('footer h2');
+            if (footerTitle) footerTitle.textContent = translations.footer_title;
+            
+            const footerSubtitle = document.querySelector('footer p.text-gray-400');
+            if (footerSubtitle) footerSubtitle.textContent = translations.footer_subtitle;
+            
+            const footerCopyright = document.querySelector('footer .text-center.md\\:text-right p:first-child');
+            if (footerCopyright) footerCopyright.textContent = translations.footer_copyright;
+            
+            const footerDemo = document.querySelector('footer .text-center.md\\:text-right p:last-child');
+            if (footerDemo) footerDemo.textContent = translations.footer_demo;
+        }
+        
+        // Update form labels and options
+        function updateFormLanguage() {
+            const translations = siteTranslations[currentLanguage];
+            if (!translations) return;
+            
+            // Update form labels
+            const labels = document.querySelectorAll('form label');
+            if (labels.length >= 6) {
+                labels[0].textContent = translations.form_name;
+                labels[1].textContent = translations.form_goal;
+                labels[2].textContent = translations.form_days;
+                labels[3].textContent = translations.form_level;
+                labels[4].textContent = translations.form_preference;
+                labels[5].textContent = translations.form_restrictions;
+            }
+            
+            // Update textarea placeholder
+            const restrictions = document.getElementById('restrictions');
+            if (restrictions) {
+                restrictions.setAttribute('placeholder', translations.form_restrictions_placeholder);
+            }
+            
+            // Update goal options
+            const goalOptions = document.getElementById('goal').options;
+            if (goalOptions.length >= 5) {
+                goalOptions[0].textContent = translations.goal_general;
+                goalOptions[1].textContent = translations.goal_weight_loss;
+                goalOptions[2].textContent = translations.goal_muscle;
+                goalOptions[3].textContent = translations.goal_strength;
+                goalOptions[4].textContent = translations.goal_endurance;
+            }
+            
+            // Update days options
+            const daysOptions = document.getElementById('days').options;
+            if (daysOptions.length >= 5) {
+                daysOptions[0].textContent = translations.days_2;
+                daysOptions[1].textContent = translations.days_3;
+                daysOptions[2].textContent = translations.days_4;
+                daysOptions[3].textContent = translations.days_5;
+                daysOptions[4].textContent = translations.days_6;
+            }
+            
+            // Update level options
+            const levelOptions = document.getElementById('level').options;
+            if (levelOptions.length >= 3) {
+                levelOptions[0].textContent = translations.level_beginner;
+                levelOptions[1].textContent = translations.level_intermediate;
+                levelOptions[2].textContent = translations.level_advanced;
+            }
+            
+            // Update preference options
+            const prefOptions = document.getElementById('preference').options;
+            if (prefOptions.length >= 3) {
+                prefOptions[0].textContent = translations.pref_home;
+                prefOptions[1].textContent = translations.pref_gym;
+                prefOptions[2].textContent = translations.pref_outdoor;
+            }
+            
+            // Update submit button
+            const submitBtn = document.querySelector('form button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = translations.generate_btn;
+            }
+            
+            // Update plan section headers
+            const scheduleTitle = document.querySelector('#planResults h4.font-semibold.mb-2');
+            if (scheduleTitle) scheduleTitle.textContent = translations.schedule_title;
+            
+            const dietTitle = document.querySelector('#dietaryGuidelines h4');
+            if (dietTitle) dietTitle.textContent = translations.diet_title;
+            
+            // Update buttons in results section
+            const downloadBtn = document.getElementById('downloadPdfBtn');
+            if (downloadBtn) {
+                const icon = downloadBtn.querySelector('i').outerHTML;
+                downloadBtn.innerHTML = `${icon} ${translations.download_btn}`;
+            }
+            
+            const newPlanBtn = document.getElementById('newPlanBtn');
+            if (newPlanBtn) {
+                const icon = newPlanBtn.querySelector('i').outerHTML;
+                newPlanBtn.innerHTML = `${icon} ${translations.new_plan_btn}`;
+            }
+        }
+        
+        // Show language change feedback
+        function showLanguageFeedback(message) {
+            // Create feedback element if it doesn't exist
+            let feedback = document.getElementById('languageFeedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.id = 'languageFeedback';
+                feedback.className = 'language-feedback';
+                document.body.appendChild(feedback);
+            }
+            
+            // Set message and show
+            feedback.textContent = message;
+            feedback.classList.add('active');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                feedback.classList.remove('active');
+            }, 3000);
+        }
+        
         // Helper functions for inline handlers
         function startVoiceInput() {
             const voiceInputStatus = document.getElementById('voiceInputStatus');
@@ -449,21 +1122,625 @@
             const iconElement = startVoiceBtn.querySelector('i');
             if (iconElement) iconElement.classList.add('voice-active-icon');
             
-            // Log for debugging
             console.log("Voice input started - UI elements shown");
             
-            // Check if the main.js file is properly loaded and has set up speech recognition
-            if (typeof window.recognition === 'undefined') {
+            // Start speech recognition
+            startSpeechRecognition();
+        }
+        
+        function startSpeechRecognition() {
+            // Check if browser supports speech recognition
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                const translations = siteTranslations[currentLanguage];
                 voiceInputStatus.innerHTML = `
                     <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg">
-                        <p class="font-medium">Speech recognition not available</p>
-                        <p class="mt-2">Please use the form input instead.</p>
+                        <p class="font-medium">${translations.voice_unavailable}</p>
+                        <p class="mt-2">${translations.voice_use_form}</p>
                         <button onclick="showFormInput()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition">
-                            Switch to Form
+                            ${translations.voice_switch_form}
                         </button>
                     </div>
                 `;
+                return false;
             }
+            
+            try {
+                // Initialize speech recognition
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                window.recognition = recognition;  // Store globally for stop button
+                
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = currentLanguage === 'en' ? 'en-US' : 
+                                  currentLanguage === 'az' ? 'az-AZ' : 
+                                  currentLanguage === 'tr' ? 'tr-TR' : 'en-US';
+                
+                // Get questions for current language
+                const questions = enhancedQuestions[currentLanguage] || enhancedQuestions.en;
+                let currentQuestionIndex = 0;
+                window.isListening = true;
+                
+                // Prepare form data object
+                let voiceFormData = {
+                    name: '',
+                    goal: '',
+                    days: '',
+                    level: '',
+                    preference: '',
+                    restrictions: ''
+                };
+                
+                // Handle speech recognition results
+                recognition.onresult = function(event) {
+                    const current = event.resultIndex;
+                    const transcript = event.results[current][0].transcript;
+                    document.getElementById('recognitionStatus').textContent = `${siteTranslations[currentLanguage].voice_listening} "${transcript}"`;
+                    
+                    // Update progress bar
+                    document.getElementById('voiceProgress').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+                };
+                
+                // When recognition stops
+                recognition.onend = function() {
+                    if (window.isListening) {
+                        const recognitionStatus = document.getElementById('recognitionStatus');
+                        const transcript = recognitionStatus.textContent.replace(`${siteTranslations[currentLanguage].voice_listening} "`, '').replace('"', '').trim();
+                        
+                        if (transcript && transcript !== siteTranslations[currentLanguage].voice_listening) {
+                            // Process the answer
+                            voiceFormData[questions[currentQuestionIndex].key] = transcript;
+                            
+                            // Move to next question or finish
+                            currentQuestionIndex++;
+                            
+                            if (currentQuestionIndex < questions.length) {
+                                // Ask next question after a short pause
+                                setTimeout(() => {
+                                    speakText(questions[currentQuestionIndex].question, function() {
+                                        // Start listening again after speaking the question
+                                        recognition.start();
+                                    });
+                                }, 1000);
+                            } else {
+                                // All questions answered, generate plan
+                                window.isListening = false;
+                                
+                                // Process the form data (clean up answers)
+                                processVoiceData(voiceFormData);
+                            }
+                        } else {
+                            // No valid transcript, try again
+                            setTimeout(() => {
+                                recognition.start();
+                            }, 500);
+                        }
+                    }
+                };
+                
+                // Handle errors
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error', event.error);
+                    const translations = siteTranslations[currentLanguage];
+                    
+                    document.getElementById('recognitionStatus').textContent = 
+                        currentLanguage === 'en' ? "There was an error with voice recognition. Please try again or use the form." :
+                        currentLanguage === 'az' ? "Səs tanımada xəta baş verdi. Yenidən cəhd edin və ya formadan istifadə edin." :
+                        "Ses tanımada bir hata oluştu. Lütfen tekrar deneyin veya formu kullanın.";
+                };
+                
+                // Start the process by asking the first question
+                speakText(questions[currentQuestionIndex].question, function() {
+                    // Start listening after speaking the question
+                    recognition.start();
+                });
+                
+                return true;
+            } catch (error) {
+                console.error("Speech recognition error:", error);
+                voiceInputStatus.innerHTML = `
+                    <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg">
+                        <p class="font-medium">Error starting speech recognition</p>
+                        <p class="mt-2">${error.message}</p>
+                        <button onclick="showFormInput()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition">
+                            Use Form Instead
+                        </button>
+                    </div>
+                `;
+                return false;
+            }
+        }
+        
+        // Process the voice data before sending to server
+        function processVoiceData(voiceData) {
+            // Clean up the data
+            
+            // For days, extract a number between 2-6
+            if (voiceData.days) {
+                const daysMatch = voiceData.days.match(/\d+/);
+                if (daysMatch) {
+                    const days = parseInt(daysMatch[0]);
+                    if (days >= 2 && days <= 6) {
+                        voiceData.days = days.toString();
+                    } else {
+                        voiceData.days = '3'; // Default
+                    }
+                } else {
+                    voiceData.days = '3'; // Default
+                }
+            }
+            
+            // For goal, map common phrases
+            if (voiceData.goal) {
+                const goalLower = voiceData.goal.toLowerCase();
+                if (goalLower.includes('weight') || goalLower.includes('fat') || goalLower.includes('slim') || 
+                    goalLower.includes('lose') || goalLower.includes('kilo') || 
+                    goalLower.includes('çəki') || goalLower.includes('arıqla') ||
+                    goalLower.includes('kilo') || goalLower.includes('zayıfla')) {
+                    voiceData.goal = 'weight_loss';
+                } else if (goalLower.includes('muscle') || goalLower.includes('bulk') || 
+                          goalLower.includes('əzələ') || 
+                          goalLower.includes('kas')) {
+                    voiceData.goal = 'muscle';
+                } else if (goalLower.includes('strength') || goalLower.includes('strong') || 
+                          goalLower.includes('güc') || 
+                          goalLower.includes('güç')) {
+                    voiceData.goal = 'strength';
+                } else if (goalLower.includes('endurance') || goalLower.includes('stamina') || 
+                          goalLower.includes('dözüm') || 
+                          goalLower.includes('dayanıklı')) {
+                    voiceData.goal = 'endurance';
+                } else {
+                    voiceData.goal = 'general';
+                }
+            }
+            
+            // For level, map common phrases
+            if (voiceData.level) {
+                const levelLower = voiceData.level.toLowerCase();
+                if (levelLower.includes('begin') || levelLower.includes('new') || levelLower.includes('start') || 
+                    levelLower.includes('başla') || 
+                    levelLower.includes('yeni')) {
+                    voiceData.level = 'beginner';
+                } else if (levelLower.includes('inter') || levelLower.includes('medium') || 
+                          levelLower.includes('orta')) {
+                    voiceData.level = 'intermediate';
+                } else if (levelLower.includes('advan') || levelLower.includes('expert') || 
+                          levelLower.includes('peşəkar') || levelLower.includes('təcrübəli') ||
+                          levelLower.includes('ileri') || levelLower.includes('uzman')) {
+                    voiceData.level = 'advanced';
+                } else {
+                    voiceData.level = 'beginner';
+                }
+            }
+            
+            // For preference, map common phrases
+            if (voiceData.preference) {
+                const prefLower = voiceData.preference.toLowerCase();
+                if (prefLower.includes('home') || 
+                    prefLower.includes('ev') || 
+                    prefLower.includes('ev')) {
+                    voiceData.preference = 'home';
+                } else if (prefLower.includes('gym') || 
+                          prefLower.includes('zal') || 
+                          prefLower.includes('salon')) {
+                    voiceData.preference = 'gym';
+                } else if (prefLower.includes('out') || prefLower.includes('park') || 
+                          prefLower.includes('açıq') || prefLower.includes('park') ||
+                          prefLower.includes('açık') || prefLower.includes('park')) {
+                    voiceData.preference = 'outdoor';
+                } else {
+                    voiceData.preference = 'home';
+                }
+            }
+            
+            // Convert "none" or similar to empty string for restrictions
+            if (voiceData.restrictions) {
+                const restrictionsLower = voiceData.restrictions.toLowerCase();
+                if (restrictionsLower === 'none' || restrictionsLower === 'no' || 
+                    restrictionsLower === 'yox' || restrictionsLower === 'xeyr' ||
+                    restrictionsLower === 'yok' || restrictionsLower === 'hayır') {
+                    voiceData.restrictions = '';
+                }
+            }
+            
+            // Show a processing message in the voice status area
+            const processingMessage = 
+                currentLanguage === 'en' ? "Creating your personalized fitness plan..." :
+                currentLanguage === 'az' ? "Şəxsi fitness planınız yaradılır..." :
+                "Kişiselleştirilmiş fitness planınız oluşturuluyor...";
+                
+            document.getElementById('voiceInputStatus').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-gray-700">${processingMessage}</p>
+                </div>
+            `;
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            
+            // Send to server
+            fetch('/generate-plan/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(voiceData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hide voice input, show results
+                    document.getElementById('voiceInputStatus').classList.add('hidden');
+                    
+                    // Display the plan
+                    const plan = data.plan;
+                    document.getElementById('planTitle').textContent = plan.plan_title || 'Your Personalized Fitness Plan';
+                    document.getElementById('planIntro').textContent = plan.introduction || 'Here is your customized fitness plan.';
+                    
+                    // Display exercise schedule
+                    displayWorkoutSchedule(plan.weekly_schedule);
+                    
+                    // Display dietary guidelines
+                    if (plan.dietary_guidelines) {
+                        document.getElementById('dietText').textContent = plan.dietary_guidelines;
+                    }
+                    
+                    // Set up download link
+                    const downloadBtn = document.getElementById('downloadPdfBtn');
+                    if (downloadBtn && plan.pdfLink) downloadBtn.href = plan.pdfLink;
+                    
+                    // Show the results section
+                    document.getElementById('planResults').classList.remove('hidden');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to generate fitness plan'));
+                    showFormInput();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: Failed to generate fitness plan. Please try again.');
+                showFormInput();
+            });
+        }
+        
+        // Function to speak text with female voice
+        function speakText(text, callback) {
+            if (!('speechSynthesis' in window)) {
+                console.error("Speech synthesis not supported");
+                if (callback) callback();
+                return;
+            }
+            
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            // Create a new utterance
+            const utterance = new SpeechSynthesisUtterance();
+            
+            // Set language based on current site language
+            utterance.lang = 
+                currentLanguage === 'en' ? 'en-US' : 
+                currentLanguage === 'az' ? 'az-AZ' : 
+                currentLanguage === 'tr' ? 'tr-TR' : 'en-US';
+            
+            // Set voice properties for female voice
+            utterance.volume = 1.0;    // 0 to 1
+            utterance.rate = 0.9;      // 0.1 to 10 - slowed down slightly for clarity
+            utterance.pitch = 1.2;     // 0 to 2 - higher pitch for female voice
+            
+            // Add friendly intro based on language
+            const friendlyIntro = Math.random() > 0.6;
+            if (friendlyIntro) {
+                if (currentLanguage === 'en') {
+                    const intros = ["Great! ", "Wonderful! ", "Perfect! ", "Thanks! ", "Alright! "];
+                    text = intros[Math.floor(Math.random() * intros.length)] + text;
+                } else if (currentLanguage === 'az') {
+                    const intros = ["Əla! ", "Gözəl! ", "Təşəkkürlər! ", "Yaxşı! "];
+                    text = intros[Math.floor(Math.random() * intros.length)] + text;
+                } else if (currentLanguage === 'tr') {
+                    const intros = ["Harika! ", "Mükemmel! ", "Teşekkürler! ", "Tamam! "];
+                    text = intros[Math.floor(Math.random() * intros.length)] + text;
+                }
+            }
+            
+            utterance.text = text;
+            
+            // Attempt to find and use a female voice
+            const voices = window.speechSynthesis.getVoices();
+            console.log("Available voices:", voices.map(v => `${v.name} (${v.lang})`));
+            
+            // First look for explicitly female voices in the correct language
+            let femaleVoice = voices.find(v => 
+                (v.name.toLowerCase().includes('female') || 
+                 v.name.toLowerCase().includes('woman') ||
+                 v.name.toLowerCase().includes('girl')) && 
+                v.lang.startsWith(utterance.lang.substring(0,2))
+            );
+            
+            // If not found, try Google female voices
+            if (!femaleVoice) {
+                femaleVoice = voices.find(v => 
+                    (v.name.toLowerCase().includes('google') &&
+                     (v.name.toLowerCase().includes('female') || 
+                      !v.name.toLowerCase().includes('male'))) &&
+                    v.lang.startsWith(utterance.lang.substring(0,2))
+                );
+            }
+            
+            // If still not found, use any voice in the right language
+            if (!femaleVoice) {
+                femaleVoice = voices.find(v => 
+                    v.lang.startsWith(utterance.lang.substring(0,2))
+                );
+            }
+            
+            // For English, prefer specific female voices
+            if (currentLanguage === 'en' && !femaleVoice) {
+                femaleVoice = voices.find(v => 
+                    v.name.includes('Google UK English Female') ||
+                    v.name.includes('Microsoft Zira') ||
+                    v.name.includes('Samantha')
+                );
+            }
+            
+            // If we found a suitable voice, use it
+            if (femaleVoice) {
+                console.log("Selected voice:", femaleVoice.name, femaleVoice.lang);
+                utterance.voice = femaleVoice;
+            } else {
+                console.warn("No appropriate voice found for", utterance.lang);
+            }
+            
+            // Set callback when speech ends
+            if (callback) {
+                utterance.onend = callback;
+            }
+            
+            // Start speaking
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // Display workout schedule
+        function displayWorkoutSchedule(schedule) {
+            const scheduleContainer = document.getElementById('weeklySchedule');
+            if (!scheduleContainer) return;
+            
+            // Clear existing content
+            scheduleContainer.innerHTML = '';
+            
+            // Create grid for workout cards
+            const translations = siteTranslations[currentLanguage];
+            
+            // Check if schedule is an array (new format) or object (old format)
+            if (Array.isArray(schedule)) {
+                // New format - array of day objects with exercises
+                schedule.forEach(dayData => {
+                    const dayCard = document.createElement('div');
+                    dayCard.className = 'bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow';
+                    
+                    // Day header
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4';
+                    dayHeader.innerHTML = `<h4 class="font-bold">${dayData.day}</h4>`;
+                    
+                    // Workout details
+                    const workoutDetails = document.createElement('div');
+                    workoutDetails.className = 'p-4';
+                    
+                    // Is it a rest day?
+                    const isRestDay = (dayData.workout && dayData.workout.toLowerCase().includes('rest')) || 
+                                      (dayData.focus && dayData.focus.toLowerCase().includes('rest'));
+                    
+                    let workoutContent = `
+                        <div class="mb-3">
+                            <h5 class="font-semibold mb-1">${translations ? translations.workout || 'Workout' : 'Workout'}:</h5>
+                            <p class="text-gray-700">${dayData.workout || ''}</p>
+                        </div>
+                    `;
+                    
+                    if (dayData.focus) {
+                        workoutContent += `
+                            <div class="mb-3">
+                                <h5 class="font-semibold mb-1">${translations ? translations.focus || 'Focus' : 'Focus'}:</h5>
+                                <p class="text-gray-700">${dayData.focus}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    if (dayData.duration) {
+                        workoutContent += `
+                            <div class="mb-3">
+                                <h5 class="font-semibold mb-1">${translations ? translations.duration || 'Duration' : 'Duration'}:</h5>
+                                <p class="text-gray-700">${dayData.duration}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    workoutDetails.innerHTML = workoutContent;
+                    
+                    // Add exercise button if not a rest day and has exercises
+                    if (!isRestDay && dayData.exercises && dayData.exercises.length > 0) {
+                        const buttonText = currentLanguage === 'az' ? 'Məşqləri Göstər' : 
+                                          currentLanguage === 'tr' ? 'Egzersizleri Göster' : 
+                                          'View Exercises';
+                                          
+                        const buttonContainer = document.createElement('div');
+                        buttonContainer.className = 'mt-4';
+                        buttonContainer.innerHTML = `
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition flex items-center justify-center">
+                                <i class="fas fa-dumbbell mr-2"></i> ${buttonText}
+                            </button>
+                        `;
+                        
+                        // Add click event to button
+                        buttonContainer.querySelector('button').addEventListener('click', function() {
+                            showExerciseModal(dayData);
+                        });
+                        
+                        workoutDetails.appendChild(buttonContainer);
+                    }
+                    
+                    // Combine elements
+                    dayCard.appendChild(dayHeader);
+                    dayCard.appendChild(workoutDetails);
+                    scheduleContainer.appendChild(dayCard);
+                });
+                
+            } else if (typeof schedule === 'object') {
+                // Old format - object with day keys
+                Object.entries(schedule).forEach(([day, workout]) => {
+                    const dayCard = document.createElement('div');
+                    dayCard.className = 'bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow';
+                    
+                    // Day header
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4';
+                    dayHeader.innerHTML = `<h4 class="font-bold">${day}</h4>`;
+                    
+                    // Workout details
+                    const workoutDetails = document.createElement('div');
+                    workoutDetails.className = 'p-4';
+                    
+                    // Basic workout info
+                    workoutDetails.innerHTML = `
+                        <div class="mb-3">
+                            <h5 class="font-semibold mb-1">${translations ? translations.workout || 'Workout' : 'Workout'}:</h5>
+                            <p class="text-gray-700">${workout}</p>
+                        </div>
+                    `;
+                    
+                    // Combine elements
+                    dayCard.appendChild(dayHeader);
+                    dayCard.appendChild(workoutDetails);
+                    scheduleContainer.appendChild(dayCard);
+                });
+            }
+        }
+        
+        // Show exercise modal
+        function showExerciseModal(dayData) {
+            // Create modal if it doesn't exist
+            let modal = document.getElementById('exerciseModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'exerciseModal';
+                modal.className = 'exercise-modal';
+                
+                const modalContent = document.createElement('div');
+                modalContent.className = 'exercise-modal-content';
+                modalContent.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-bold" id="modalTitle"></h3>
+                            <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+                        <div id="modalContent"></div>
+                    </div>
+                `;
+                
+                modal.appendChild(modalContent);
+                document.body.appendChild(modal);
+                
+                // Close modal when clicked outside or on close button
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+                
+                document.getElementById('closeModal').addEventListener('click', function() {
+                    modal.classList.remove('active');
+                });
+            }
+            
+            // Set modal title
+            document.getElementById('modalTitle').textContent = `${dayData.day}: ${dayData.focus || dayData.workout}`;
+            
+            // Create content
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = '';
+            
+            // Get translations
+            const translations = siteTranslations[currentLanguage];
+            const exercisesLabel = translations ? translations.exercises || 'Exercises' : 'Exercises';
+            const setsLabel = translations ? translations.sets || 'Sets' : 'Sets';
+            const repsLabel = translations ? translations.reps || 'Reps' : 'Reps';
+            const restLabel = translations ? translations.rest || 'Rest' : 'Rest';
+            const instructionsLabel = translations ? translations.instructions || 'Instructions' : 'Instructions';
+            
+            // Create exercises table
+            if (dayData.exercises && dayData.exercises.length > 0) {
+                const exerciseTable = document.createElement('div');
+                exerciseTable.className = 'overflow-x-auto';
+                exerciseTable.innerHTML = `
+                    <table class="min-w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-4 py-2 text-left">${exercisesLabel}</th>
+                                <th class="px-4 py-2 text-center">${setsLabel}</th>
+                                <th class="px-4 py-2 text-center">${repsLabel}</th>
+                                <th class="px-4 py-2 text-center">${restLabel}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exerciseTableBody">
+                        </tbody>
+                    </table>
+                `;
+                
+                modalContent.appendChild(exerciseTable);
+                
+                // Add exercises to table
+                const tableBody = exerciseTable.querySelector('#exerciseTableBody');
+                dayData.exercises.forEach((exercise, index) => {
+                    const row = document.createElement('tr');
+                    row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    
+                    // Make the exercise name clickable to show instructions
+                    row.innerHTML = `
+                        <td class="px-4 py-3 border-t">
+                            <button class="text-blue-600 hover:text-blue-800 font-medium text-left">
+                                ${exercise.name}
+                            </button>
+                        </td>
+                        <td class="px-4 py-3 border-t text-center">${exercise.sets}</td>
+                        <td class="px-4 py-3 border-t text-center">${exercise.reps}</td>
+                        <td class="px-4 py-3 border-t text-center">${exercise.rest}</td>
+                    `;
+                    
+                    // Add event listener to show instructions
+                    const nameBtn = row.querySelector('button');
+                    nameBtn.addEventListener('click', function() {
+                        // Check if instructions are already shown
+                        if (row.nextElementSibling && row.nextElementSibling.classList.contains('instruction-row')) {
+                            // Toggle visibility
+                            row.nextElementSibling.remove();
+                        } else {
+                            // Add instructions
+                            const instructionRow = document.createElement('tr');
+                            instructionRow.className = 'instruction-row';
+                            instructionRow.innerHTML = `
+                                <td colspan="4" class="px-4 py-3 border-t bg-blue-50">
+                                    <h5 class="font-medium mb-2">${instructionsLabel}</h5>
+                                    <p class="text-gray-700">${exercise.description || 'No detailed instructions available.'}</p>
+                                </td>
+                            `;
+                            row.insertAdjacentElement('afterend', instructionRow);
+                        }
+                    });
+                    
+                    tableBody.appendChild(row);
+                });
+            } else {
+                modalContent.innerHTML = '<p class="text-gray-600">No specific exercises provided for this day.</p>';
+            }
+            
+            // Show the modal
+            modal.classList.add('active');
         }
         
         function showFormInput() {
@@ -485,6 +1762,7 @@
             // If form content was replaced with a loading indicator, restore the form
             if (!document.getElementById('fitnessForm')) {
                 formInput.innerHTML = originalFormHTML || '';
+                updateFormLanguage();
             }
             
             console.log("Form input shown");
@@ -493,9 +1771,16 @@
         // Store original form HTML in case we need to restore it
         const originalFormHTML = document.getElementById('formInput').innerHTML;
         
-        // Make showFormInput available globally
+        // Apply the current language on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            changeLanguage(currentLanguage);
+        });
+        
+        // Make functions available globally
         window.showFormInput = showFormInput;
         window.startVoiceInput = startVoiceInput;
+        window.changeLanguage = changeLanguage;
+        window.speakText = speakText;
     </script>
     <script src="{% static 'core/js/main.js' %}"></script>
 </body>
