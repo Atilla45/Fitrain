@@ -124,7 +124,6 @@ def landing_page(request):
     return render(request, 'core/landing.html')
 
 
-@csrf_exempt  # Required for AJAX POST requests
 @require_POST
 def generate_plan_view(request):
     """
@@ -132,7 +131,16 @@ def generate_plan_view(request):
     This endpoint is called by the frontend JavaScript.
     """
     try:
-        data = json.loads(request.body)
+        # Try to parse JSON from the request
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON data'
+            }, status=400)
+        
+        # Generate the fitness plan
         fitness_plan = create_fitness_plan(data)
         
         # Render the plan template to HTML (for PDF generation later)
@@ -147,6 +155,10 @@ def generate_plan_view(request):
             'plan': fitness_plan
         })
     except Exception as e:
+        import traceback
+        print(f"Error generating plan: {str(e)}")
+        print(traceback.format_exc())
+        
         return JsonResponse({
             'success': False,
             'error': str(e)

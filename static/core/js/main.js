@@ -342,18 +342,29 @@ document.addEventListener('DOMContentLoaded', function() {
         planResults.classList.add('hidden');
         document.body.style.cursor = 'wait';
         
+        // Get CSRF token from form or meta tag
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || getCsrfToken();
+        
+        // Show loading message
+        const loadingMessage = document.createElement('div');
+        loadingMessage.className = 'fixed top-0 left-0 w-full bg-blue-600 text-white text-center py-2 z-50';
+        loadingMessage.id = 'loadingMessage';
+        loadingMessage.innerHTML = 'Generating your fitness plan...';
+        document.body.appendChild(loadingMessage);
+        
         // Make API request to generate the plan
         fetch('/generate-plan/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify(formData)
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                console.error('Server returned error:', response.status, response.statusText);
+                throw new Error(`Server error: ${response.status}. Please try again.`);
             }
             return response.json();
         })
@@ -365,10 +376,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            alert('Error generating plan: ' + error.message);
+            console.error('Error details:', error);
+            
+            // Show error message in the appropriate language
+            let errorMsg = '';
+            if (currentLanguage === 'en') {
+                errorMsg = 'Error generating plan: ' + error.message + '. Please try again.';
+            } else if (currentLanguage === 'az') {
+                errorMsg = 'Plan yaradılanda xəta: ' + error.message + '. Zəhmət olmasa bir daha cəhd edin.';
+            } else if (currentLanguage === 'tr') {
+                errorMsg = 'Plan oluşturulurken hata: ' + error.message + '. Lütfen tekrar deneyin.';
+            } else {
+                errorMsg = 'Error generating plan: ' + error.message;
+            }
+            
+            // Create a nicer error message element instead of using alert
+            const errorElement = document.createElement('div');
+            errorElement.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4';
+            errorElement.innerHTML = `
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">${errorMsg}</span>
+            `;
+            
+            formInput.insertBefore(errorElement, fitnessForm);
+            
+            // Remove the error after 5 seconds
+            setTimeout(() => {
+                if (errorElement.parentNode === formInput) {
+                    formInput.removeChild(errorElement);
+                }
+            }, 5000);
         })
         .finally(() => {
             document.body.style.cursor = 'default';
+            
+            // Remove loading message
+            const loadingMsg = document.getElementById('loadingMessage');
+            if (loadingMsg) {
+                document.body.removeChild(loadingMsg);
+            }
         });
     }
 
@@ -436,6 +482,77 @@ document.addEventListener('DOMContentLoaded', function() {
     
     showFormBtn.addEventListener('click', showFormInput);
     
+    // Language selector event listener
+    languageSelector.addEventListener('change', function(e) {
+        currentLanguage = e.target.value;
+        questions = getQuestions();
+        
+        // Update UI text based on language
+        updateUIText();
+    });
+    
+    // Update UI text based on selected language
+    function updateUIText() {
+        const translations = {
+            en: {
+                startVoice: "Start Voice Input",
+                useForm: "Use Text Form",
+                generate: "Generate My Fitness Plan",
+                download: "Download PDF",
+                newPlan: "Create New Plan",
+                nameLabel: "Your Name",
+                goalLabel: "Main Fitness Goal",
+                daysLabel: "Days Per Week Available",
+                levelLabel: "Experience Level",
+                prefLabel: "Workout Preference",
+                restrictionsLabel: "Any Physical Restrictions?"
+            },
+            az: {
+                startVoice: "Səsli Daxil Etməyə Başlayın",
+                useForm: "Mətn Formunu İstifadə Edin",
+                generate: "Fitnes Planımı Yarat",
+                download: "PDF Yüklə",
+                newPlan: "Yeni Plan Yarat",
+                nameLabel: "Adınız",
+                goalLabel: "Əsas Fitness Hədəfiniz",
+                daysLabel: "Həftədə Neçə Gün Çalışa Bilərsiniz",
+                levelLabel: "Təcrübə Səviyyəsi",
+                prefLabel: "Məşq Üstünlüyü",
+                restrictionsLabel: "Hər Hansı Fiziki Məhdudiyyətlər?"
+            },
+            tr: {
+                startVoice: "Sesli Girişe Başla",
+                useForm: "Metin Formunu Kullan",
+                generate: "Fitness Planımı Oluştur",
+                download: "PDF İndir",
+                newPlan: "Yeni Plan Oluştur",
+                nameLabel: "Adınız",
+                goalLabel: "Ana Fitness Hedefiniz",
+                daysLabel: "Haftada Kaç Gün Müsaitsiniz",
+                levelLabel: "Deneyim Seviyesi",
+                prefLabel: "Antrenman Tercihi",
+                restrictionsLabel: "Herhangi Bir Fiziksel Kısıtlamanız Var Mı?"
+            }
+        };
+        
+        const lang = translations[currentLanguage] || translations.en;
+        
+        // Update button text
+        startVoiceBtn.innerHTML = `<i class="fas fa-microphone mr-2"></i> ${lang.startVoice}`;
+        showFormBtn.innerHTML = `<i class="fas fa-keyboard mr-2"></i> ${lang.useForm}`;
+        document.querySelector('#fitnessForm button[type="submit"]').textContent = lang.generate;
+        downloadPdfBtn.innerHTML = `<i class="fas fa-file-pdf mr-2"></i> ${lang.download}`;
+        newPlanBtn.innerHTML = `<i class="fas fa-redo mr-2"></i> ${lang.newPlan}`;
+        
+        // Update labels
+        document.querySelector('label[for="name"]').textContent = lang.nameLabel;
+        document.querySelector('label[for="goal"]').textContent = lang.goalLabel;
+        document.querySelector('label[for="days"]').textContent = lang.daysLabel;
+        document.querySelector('label[for="level"]').textContent = lang.levelLabel;
+        document.querySelector('label[for="preference"]').textContent = lang.prefLabel;
+        document.querySelector('label[for="restrictions"]').textContent = lang.restrictionsLabel;
+    }
+    
     fitnessForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -458,6 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showFormInput();
     });
 
-    // Initialize - show the form by default
+    // Initialize - show the form by default and setup initial UI language
     showFormInput();
+    updateUIText();
 });
