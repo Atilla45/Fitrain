@@ -16,8 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const newPlanBtn = document.getElementById('newPlanBtn');
     const languageSelector = document.getElementById('language-selector');
 
-    // Current language
-    let currentLanguage = 'en';
+    // Current language - check localStorage first, default to 'en'
+    let currentLanguage = localStorage.getItem('preferredLanguage') || 'en';
+    
+    // Set the language selector to match stored preference
+    languageSelector.value = currentLanguage;
 
     // Form data collected through voice
     let voiceFormData = {
@@ -562,6 +565,41 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update UI text based on language
         updateUIText();
+        
+        // Store language preference in localStorage
+        localStorage.setItem('preferredLanguage', currentLanguage);
+        
+        // Show a confirmation message
+        const message = document.createElement('div');
+        message.className = 'fixed top-0 left-0 w-full bg-green-500 text-white text-center py-2 z-50';
+        message.id = 'languageMessage';
+        
+        // Language-specific confirmation message
+        if (currentLanguage === 'en') {
+            message.innerHTML = 'Language changed to English!';
+        } else if (currentLanguage === 'az') {
+            message.innerHTML = 'Dil Azərbaycancaya dəyişdirildi!';
+        } else if (currentLanguage === 'tr') {
+            message.innerHTML = 'Dil Türkçeye değiştirildi!';
+        }
+        
+        document.body.appendChild(message);
+        
+        // Remove the message after 2 seconds
+        setTimeout(() => {
+            if (document.getElementById('languageMessage')) {
+                document.body.removeChild(document.getElementById('languageMessage'));
+            }
+        }, 2000);
+        
+        // Also test the voice in the new language
+        if (currentLanguage === 'en') {
+            speakText("Language changed to English! The voice will now speak in English.", null);
+        } else if (currentLanguage === 'az') {
+            speakText("Dil Azərbaycancaya dəyişdirildi! Artıq səs Azərbaycanca danışacaq.", null);
+        } else if (currentLanguage === 'tr') {
+            speakText("Dil Türkçeye değiştirildi! Ses artık Türkçe konuşacak.", null);
+        }
     });
     
     // Update UI text based on selected language
@@ -651,4 +689,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize - show the form by default and setup initial UI language
     showFormInput();
     updateUIText();
+    
+    // Initialize the language dropdown with the current language
+    document.getElementById('language-selector').value = currentLanguage;
+    
+    // Trigger updateUIText immediately to ensure all UI elements are in the correct language
+    setTimeout(updateUIText, 100);
 });
