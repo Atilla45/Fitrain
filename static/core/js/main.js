@@ -495,6 +495,82 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Display the generated plan
+    // Helper function to get exercise image URL based on exercise name
+    function getExerciseImageUrl(exerciseName) {
+        // Map of exercise names to image URLs
+        const exerciseImages = {
+            // Cardio
+            'Running': 'https://cdn.pixabay.com/photo/2016/11/18/13/23/action-1834465_640.jpg',
+            'Jogging': 'https://cdn.pixabay.com/photo/2020/01/21/11/39/running-4782722_640.jpg',
+            'Jumping Jacks': 'https://cdn.pixabay.com/photo/2022/07/09/16/57/exercise-7311493_640.jpg',
+            'Cycling': 'https://cdn.pixabay.com/photo/2014/09/19/22/09/bicycle-452271_640.jpg',
+            'Jump Rope': 'https://cdn.pixabay.com/photo/2019/09/01/20/25/skipping-rope-4446219_640.jpg',
+            'Swimming': 'https://cdn.pixabay.com/photo/2016/06/25/12/52/laptop-1478822_640.jpg',
+            
+            // Upper Body
+            'Push-ups': 'https://cdn.pixabay.com/photo/2018/10/01/22/57/sport-3716668_640.jpg',
+            'Pull-ups': 'https://cdn.pixabay.com/photo/2019/06/19/11/40/pull-ups-4284216_640.jpg',
+            'Dumbbell Rows': 'https://cdn.pixabay.com/photo/2015/07/02/10/27/training-828741_640.jpg',
+            'Bench Press': 'https://cdn.pixabay.com/photo/2016/03/27/07/08/man-1282232_640.jpg',
+            'Shoulder Press': 'https://cdn.pixabay.com/photo/2014/11/26/16/40/pull-up-546232_640.jpg',
+            'Tricep Dips': 'https://cdn.pixabay.com/photo/2021/01/03/03/43/man-5884546_640.jpg',
+            'Bicep Curls': 'https://cdn.pixabay.com/photo/2015/01/10/17/32/physiotherapy-596257_640.jpg',
+            
+            // Lower Body
+            'Squats': 'https://cdn.pixabay.com/photo/2015/07/02/10/23/training-828726_640.jpg',
+            'Lunges': 'https://cdn.pixabay.com/photo/2017/04/22/10/15/woman-2250970_640.jpg',
+            'Deadlifts': 'https://cdn.pixabay.com/photo/2016/11/29/12/10/barbell-1869146_640.jpg',
+            'Leg Press': 'https://cdn.pixabay.com/photo/2017/01/09/14/40/bodybuilder-1966804_640.jpg',
+            'Calf Raises': 'https://cdn.pixabay.com/photo/2020/11/24/16/35/man-5772408_640.jpg',
+            
+            // Core
+            'Planks': 'https://cdn.pixabay.com/photo/2017/08/07/14/02/people-2604149_640.jpg',
+            'Crunches': 'https://cdn.pixabay.com/photo/2015/07/02/10/26/training-828738_640.jpg',
+            'Russian Twists': 'https://cdn.pixabay.com/photo/2020/11/24/16/35/man-5772403_640.jpg',
+            'Leg Raises': 'https://cdn.pixabay.com/photo/2017/04/27/08/29/man-2264825_640.jpg',
+            
+            // Default
+            'default': 'https://cdn.pixabay.com/photo/2014/11/17/13/17/crossfit-534615_640.jpg'
+        };
+        
+        // Try to match the exercise name (case insensitive)
+        const normalized = exerciseName.trim();
+        for (const [name, url] of Object.entries(exerciseImages)) {
+            if (normalized.toLowerCase().includes(name.toLowerCase())) {
+                return url;
+            }
+        }
+        
+        // Return default image if no match
+        return exerciseImages.default;
+    }
+    
+    // Helper function to get exercise instructions
+    function getExerciseInstructions(exerciseName) {
+        const exerciseInstructions = {
+            // Common exercises with detailed instructions
+            'Push-ups': 'Place hands slightly wider than shoulders. Keep body in straight line from head to heels. Bend elbows to lower chest to the floor, then push back up.',
+            'Pull-ups': 'Hang from bar with palms facing away. Pull your body up until chin is above the bar. Lower with control.',
+            'Squats': 'Stand with feet shoulder-width apart. Lower your body as if sitting in a chair. Keep chest up and knees behind toes. Push through heels to stand back up.',
+            'Lunges': 'Stand with feet hip-width apart. Step one foot forward and lower body until both knees form 90-degree angles. Push back to start position and repeat with other leg.',
+            'Planks': 'Start in push-up position, lower onto forearms. Keep body in straight line from head to heels. Engage core and hold the position.',
+            'Running': 'Maintain upright posture with slight forward lean. Land midfoot and roll to push off with toes. Bend arms at 90 degrees and swing from shoulders.',
+            'Jumping Jacks': 'Start with feet together and arms at sides. Jump feet apart while raising arms overhead. Jump back to starting position and repeat.',
+            'Bicep Curls': 'Stand with weights at sides, palms forward. Keeping upper arms stationary, bend elbows to lift weights to shoulders. Lower with control and repeat.'
+        };
+        
+        // Try to match the exercise name (case insensitive)
+        const normalized = exerciseName.trim();
+        for (const [name, instructions] of Object.entries(exerciseInstructions)) {
+            if (normalized.toLowerCase().includes(name.toLowerCase())) {
+                return instructions;
+            }
+        }
+        
+        // Return generic instructions if no match
+        return 'Perform the exercise with proper form, focusing on controlled movements. Breathe steadily throughout the movement.';
+    }
+    
     function displayPlanResults(plan) {
         // Hide other sections and show results
         voiceInputStatus.classList.add('hidden');
@@ -502,20 +578,201 @@ document.addEventListener('DOMContentLoaded', function() {
         planResults.classList.remove('hidden');
         
         // Populate plan details
-        planTitle.textContent = plan.plan_title;
-        planIntro.textContent = plan.introduction;
+        planTitle.textContent = plan.plan_title || 'Your Personalized Fitness Plan';
+        planIntro.textContent = plan.introduction || 'Here is your customized fitness plan based on your goals and preferences.';
         
-        // Populate weekly schedule
+        // Get translations based on current language
+        const translations = {
+            en: {
+                schedule: "Weekly Schedule",
+                day: "Day",
+                focus: "Focus",
+                exercises: "Exercises",
+                sets: "Sets",
+                reps: "Reps",
+                details: "View Details",
+                rest: "Rest",
+                diet: "Dietary Guidelines",
+                workout: "Workout"
+            },
+            az: {
+                schedule: "Həftəlik Qrafik",
+                day: "Gün",
+                focus: "Fokus",
+                exercises: "Məşqlər",
+                sets: "Setlər",
+                reps: "Təkrarlar",
+                details: "Ətraflı Bax",
+                rest: "İstirahət",
+                diet: "Qidalanma Təlimatları",
+                workout: "Məşq"
+            },
+            tr: {
+                schedule: "Haftalık Program",
+                day: "Gün",
+                focus: "Odak",
+                exercises: "Egzersizler",
+                sets: "Setler",
+                reps: "Tekrarlar",
+                details: "Detayları Gör",
+                rest: "Dinlenme",
+                diet: "Beslenme Kılavuzu",
+                workout: "Antrenman"
+            }
+        };
+        
+        const lang = translations[currentLanguage] || translations.en;
+        
+        // Populate weekly schedule with enhanced details
         weeklySchedule.innerHTML = '';
-        for (const [day, workout] of Object.entries(plan.weekly_schedule)) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'px-3 py-2 bg-blue-100 rounded';
-            dayElement.innerHTML = `<strong>${day}:</strong> ${workout}`;
-            weeklySchedule.appendChild(dayElement);
+        
+        // Add section title
+        const scheduleTitle = document.createElement('h3');
+        scheduleTitle.className = 'text-xl font-bold text-gray-800 mb-4';
+        scheduleTitle.textContent = lang.schedule;
+        weeklySchedule.appendChild(scheduleTitle);
+        
+        // Create grid for workout cards
+        const cardGrid = document.createElement('div');
+        cardGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
+        weeklySchedule.appendChild(cardGrid);
+        
+        // Process the weekly schedule
+        if (plan.weekly_schedule) {
+            for (const [day, workout] of Object.entries(plan.weekly_schedule)) {
+                // Create workout card
+                const dayCard = document.createElement('div');
+                dayCard.className = 'bg-white shadow rounded-lg overflow-hidden transition-transform hover:shadow-lg';
+                
+                // Create day header with gradient
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4';
+                dayHeader.innerHTML = `<h4 class="font-bold">${day}</h4>`;
+                
+                // Create workout details
+                const workoutDetails = document.createElement('div');
+                workoutDetails.className = 'p-4';
+                
+                // Extract focus/target areas from workout text
+                let focus = 'Full Body';
+                if (workout.toLowerCase().includes('upper')) {
+                    focus = 'Upper Body';
+                } else if (workout.toLowerCase().includes('lower')) {
+                    focus = 'Lower Body';
+                } else if (workout.toLowerCase().includes('cardio')) {
+                    focus = 'Cardio';
+                } else if (workout.toLowerCase().includes('core')) {
+                    focus = 'Core';
+                } else if (workout.toLowerCase().includes('rest')) {
+                    focus = 'Rest Day';
+                }
+                
+                // Choose image based on workout focus
+                let workoutImage = getExerciseImageUrl(focus);
+                
+                // Generate suggested exercises based on focus
+                let suggestedExercises = [];
+                if (focus === 'Upper Body') {
+                    suggestedExercises = ['Push-ups', 'Pull-ups', 'Dumbbell Rows', 'Shoulder Press', 'Bicep Curls'];
+                } else if (focus === 'Lower Body') {
+                    suggestedExercises = ['Squats', 'Lunges', 'Deadlifts', 'Calf Raises', 'Leg Raises'];
+                } else if (focus === 'Cardio') {
+                    suggestedExercises = ['Running', 'Jumping Jacks', 'Jump Rope', 'Cycling', 'Swimming'];
+                } else if (focus === 'Core') {
+                    suggestedExercises = ['Planks', 'Crunches', 'Russian Twists', 'Leg Raises'];
+                } else {
+                    suggestedExercises = ['Push-ups', 'Squats', 'Planks', 'Jumping Jacks', 'Lunges'];
+                }
+                
+                // Add a small thumbnail image
+                workoutDetails.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="mr-3 flex-shrink-0">
+                            <img src="${workoutImage}" alt="${focus}" class="w-16 h-16 rounded object-cover shadow">
+                        </div>
+                        <div>
+                            <p class="text-blue-600 font-medium">${workout}</p>
+                            <p class="text-gray-600 text-sm">${lang.focus}: ${focus}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Only show exercise details for workout days (not rest days)
+                if (!workout.toLowerCase().includes('rest')) {
+                    // Add suggested exercises with toggle button
+                    const exercisesContainer = document.createElement('div');
+                    exercisesContainer.className = 'mt-4 pt-3 border-t border-gray-200';
+                    
+                    // Create toggle button for exercise details
+                    const toggleButton = document.createElement('button');
+                    toggleButton.className = 'w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded flex justify-between items-center';
+                    toggleButton.innerHTML = `
+                        <span>${lang.exercises} (${suggestedExercises.length})</span>
+                        <i class="fas fa-chevron-down"></i>
+                    `;
+                    
+                    // Create collapsible content
+                    const exerciseDetails = document.createElement('div');
+                    exerciseDetails.className = 'hidden mt-3 bg-gray-50 rounded p-3';
+                    exerciseDetails.innerHTML = '<ul class="space-y-2"></ul>';
+                    
+                    // Add exercises to the list
+                    const exerciseList = exerciseDetails.querySelector('ul');
+                    suggestedExercises.forEach((exercise) => {
+                        const exerciseItem = document.createElement('li');
+                        exerciseItem.className = 'flex items-center';
+                        
+                        // Get small icon image
+                        const iconUrl = getExerciseImageUrl(exercise);
+                        
+                        exerciseItem.innerHTML = `
+                            <img src="${iconUrl}" alt="${exercise}" class="w-8 h-8 rounded-full object-cover mr-2">
+                            <span class="flex-grow">${exercise}</span>
+                            <span class="text-gray-500 text-sm">3×12</span>
+                        `;
+                        
+                        exerciseList.appendChild(exerciseItem);
+                    });
+                    
+                    // Toggle visibility when button is clicked
+                    toggleButton.addEventListener('click', () => {
+                        exerciseDetails.classList.toggle('hidden');
+                        toggleButton.querySelector('i').classList.toggle('fa-chevron-down');
+                        toggleButton.querySelector('i').classList.toggle('fa-chevron-up');
+                    });
+                    
+                    exercisesContainer.appendChild(toggleButton);
+                    exercisesContainer.appendChild(exerciseDetails);
+                    workoutDetails.appendChild(exercisesContainer);
+                }
+                
+                // Assemble card
+                dayCard.appendChild(dayHeader);
+                dayCard.appendChild(workoutDetails);
+                cardGrid.appendChild(dayCard);
+            }
+        }
+        
+        // Add dietary guidelines section if available
+        if (plan.dietary_guidelines) {
+            const dietSection = document.createElement('div');
+            dietSection.className = 'mt-8 bg-white shadow rounded-lg p-6';
+            
+            dietSection.innerHTML = `
+                <h3 class="text-xl font-bold text-gray-800 mb-4">${lang.diet}</h3>
+                <div class="prose max-w-none">
+                    <p>${plan.dietary_guidelines}</p>
+                </div>
+            `;
+            
+            weeklySchedule.appendChild(dietSection);
         }
         
         // Setup download button
         downloadPdfBtn.setAttribute('href', '/download-pdf/');
+        
+        // Scroll to results
+        planResults.scrollIntoView({ behavior: 'smooth' });
     }
 
     // Get CSRF token for POST requests
@@ -563,8 +820,19 @@ document.addEventListener('DOMContentLoaded', function() {
         currentLanguage = e.target.value;
         questions = getQuestions();
         
+        console.log("Language changed to:", currentLanguage);
+        
+        // Immediately update the recognition language if recognition is active
+        if (recognition) {
+            recognition.lang = voiceLanguages[currentLanguage];
+            console.log("Recognition language updated to:", recognition.lang);
+        }
+        
         // Update UI text based on language
         updateUIText();
+        
+        // Update dropdown selection to visually confirm change
+        languageSelector.value = currentLanguage;
         
         // Store language preference in localStorage
         localStorage.setItem('preferredLanguage', currentLanguage);
@@ -592,15 +860,140 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 2000);
         
-        // Also test the voice in the new language
-        if (currentLanguage === 'en') {
-            speakText("Language changed to English! The voice will now speak in English.", null);
-        } else if (currentLanguage === 'az') {
-            speakText("Dil Azərbaycancaya dəyişdirildi! Artıq səs Azərbaycanca danışacaq.", null);
-        } else if (currentLanguage === 'tr') {
-            speakText("Dil Türkçeye değiştirildi! Ses artık Türkçe konuşacak.", null);
-        }
+        // Also test the voice in the new language - force a small delay to ensure the speech engine is ready
+        setTimeout(() => {
+            try {
+                if (currentLanguage === 'en') {
+                    speakText("Language changed to English! The voice will now speak in English.", null);
+                } else if (currentLanguage === 'az') {
+                    speakText("Dil Azərbaycancaya dəyişdirildi! Artıq səs Azərbaycanca danışacaq.", null);
+                } else if (currentLanguage === 'tr') {
+                    speakText("Dil Türkçeye değiştirildi! Ses artık Türkçe konuşacak.", null);
+                }
+            } catch (e) {
+                console.error("Error while trying to speak:", e);
+            }
+        }, 300);
+        
+        // Force reload page options for form inputs
+        updateFormOptions();
     });
+    
+    // Update form options based on selected language
+    function updateFormOptions() {
+        const goalOptions = {
+            en: [
+                { value: 'general', text: 'General Fitness & Health' },
+                { value: 'weight_loss', text: 'Weight Loss' },
+                { value: 'muscle', text: 'Build Muscle' },
+                { value: 'strength', text: 'Increase Strength' },
+                { value: 'endurance', text: 'Improve Endurance' }
+            ],
+            az: [
+                { value: 'general', text: 'Ümumi Fitness və Sağlamlıq' },
+                { value: 'weight_loss', text: 'Çəki Vermək' },
+                { value: 'muscle', text: 'Əzələ Qurmaq' },
+                { value: 'strength', text: 'Gücü Artırmaq' },
+                { value: 'endurance', text: 'Dözümlülüyü Artırmaq' }
+            ],
+            tr: [
+                { value: 'general', text: 'Genel Fitness ve Sağlık' },
+                { value: 'weight_loss', text: 'Kilo Vermek' },
+                { value: 'muscle', text: 'Kas Yapmak' },
+                { value: 'strength', text: 'Güç Artırmak' },
+                { value: 'endurance', text: 'Dayanıklılığı Artırmak' }
+            ]
+        };
+        
+        const levelOptions = {
+            en: [
+                { value: 'beginner', text: 'Beginner' },
+                { value: 'intermediate', text: 'Intermediate' },
+                { value: 'advanced', text: 'Advanced' }
+            ],
+            az: [
+                { value: 'beginner', text: 'Başlanğıc' },
+                { value: 'intermediate', text: 'Orta' },
+                { value: 'advanced', text: 'Peşəkar' }
+            ],
+            tr: [
+                { value: 'beginner', text: 'Başlangıç' },
+                { value: 'intermediate', text: 'Orta Seviye' },
+                { value: 'advanced', text: 'İleri Seviye' }
+            ]
+        };
+        
+        const prefOptions = {
+            en: [
+                { value: 'home', text: 'Home Workouts' },
+                { value: 'gym', text: 'Gym Workouts' },
+                { value: 'outdoor', text: 'Outdoor Workouts' }
+            ],
+            az: [
+                { value: 'home', text: 'Ev Məşqləri' },
+                { value: 'gym', text: 'İdman Zalı Məşqləri' },
+                { value: 'outdoor', text: 'Açıq Havada Məşqlər' }
+            ],
+            tr: [
+                { value: 'home', text: 'Ev Antrenmanları' },
+                { value: 'gym', text: 'Spor Salonu Antrenmanları' },
+                { value: 'outdoor', text: 'Açık Hava Antrenmanları' }
+            ]
+        };
+        
+        const daysOptions = {
+            en: [
+                { value: '2', text: '2 days' },
+                { value: '3', text: '3 days' },
+                { value: '4', text: '4 days' },
+                { value: '5', text: '5 days' },
+                { value: '6', text: '6 days' }
+            ],
+            az: [
+                { value: '2', text: '2 gün' },
+                { value: '3', text: '3 gün' },
+                { value: '4', text: '4 gün' },
+                { value: '5', text: '5 gün' },
+                { value: '6', text: '6 gün' }
+            ],
+            tr: [
+                { value: '2', text: '2 gün' },
+                { value: '3', text: '3 gün' },
+                { value: '4', text: '4 gün' },
+                { value: '5', text: '5 gün' },
+                { value: '6', text: '6 gün' }
+            ]
+        };
+        
+        // Update all select elements with localized options
+        updateSelectOptions('goal', goalOptions[currentLanguage] || goalOptions.en);
+        updateSelectOptions('level', levelOptions[currentLanguage] || levelOptions.en);
+        updateSelectOptions('preference', prefOptions[currentLanguage] || prefOptions.en);
+        updateSelectOptions('days', daysOptions[currentLanguage] || daysOptions.en);
+    }
+    
+    // Helper function to update select options
+    function updateSelectOptions(selectId, options) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        // Save current value
+        const currentValue = select.value;
+        
+        // Clear current options
+        select.innerHTML = '';
+        
+        // Add new options
+        options.forEach(option => {
+            const optElement = document.createElement('option');
+            optElement.value = option.value;
+            optElement.textContent = option.text;
+            select.appendChild(optElement);
+        });
+        
+        // Restore previous selection if possible
+        select.value = currentValue;
+    }
     
     // Update UI text based on selected language
     function updateUIText() {
@@ -616,7 +1009,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 daysLabel: "Days Per Week Available",
                 levelLabel: "Experience Level",
                 prefLabel: "Workout Preference",
-                restrictionsLabel: "Any Physical Restrictions?"
+                restrictionsLabel: "Any Physical Restrictions?",
+                // New translations for sections
+                planTitle: "Your Personalized Fitness Plan",
+                weeklySchedule: "Weekly Schedule",
+                exercises: "Exercises",
+                instructions: "Instructions",
+                dietaryGuidelines: "Dietary Guidelines",
+                setsReps: "Sets & Reps"
             },
             az: {
                 startVoice: "Səsli Daxil Etməyə Başlayın",
@@ -629,7 +1029,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 daysLabel: "Həftədə Neçə Gün Çalışa Bilərsiniz",
                 levelLabel: "Təcrübə Səviyyəsi",
                 prefLabel: "Məşq Üstünlüyü",
-                restrictionsLabel: "Hər Hansı Fiziki Məhdudiyyətlər?"
+                restrictionsLabel: "Hər Hansı Fiziki Məhdudiyyətlər?",
+                // New translations for sections
+                planTitle: "Sizin Fərdi Fitness Planınız",
+                weeklySchedule: "Həftəlik Qrafik",
+                exercises: "Məşqlər",
+                instructions: "Təlimatlar",
+                dietaryGuidelines: "Qidalanma Təlimatları",
+                setsReps: "Setlər və Təkrarlar"
             },
             tr: {
                 startVoice: "Sesli Girişe Başla",
@@ -642,7 +1049,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 daysLabel: "Haftada Kaç Gün Müsaitsiniz",
                 levelLabel: "Deneyim Seviyesi",
                 prefLabel: "Antrenman Tercihi",
-                restrictionsLabel: "Herhangi Bir Fiziksel Kısıtlamanız Var Mı?"
+                restrictionsLabel: "Herhangi Bir Fiziksel Kısıtlamanız Var Mı?",
+                // New translations for sections
+                planTitle: "Kişiselleştirilmiş Fitness Planınız",
+                weeklySchedule: "Haftalık Program",
+                exercises: "Egzersizler",
+                instructions: "Talimatlar",
+                dietaryGuidelines: "Beslenme Kılavuzu",
+                setsReps: "Set ve Tekrarlar"
             }
         };
         
@@ -662,6 +1076,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('label[for="level"]').textContent = lang.levelLabel;
         document.querySelector('label[for="preference"]').textContent = lang.prefLabel;
         document.querySelector('label[for="restrictions"]').textContent = lang.restrictionsLabel;
+        
+        // Update form options as well
+        updateFormOptions();
     }
     
     fitnessForm.addEventListener('submit', function(e) {
