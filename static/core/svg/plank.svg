@@ -2,23 +2,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <style>
     .figure { fill: #4361ee; }
-    .outline { fill: none; stroke: #4361ee; stroke-width: 2; stroke-linecap: round; }
-    .bg { fill: #f0f5ff; }
+    .outline { fill: none; stroke: #4361ee; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   </style>
-  <circle class="bg" cx="100" cy="100" r="90"/>
-  <g>
+  
+  <!-- Figure in plank position -->
+  <g class="outline">
     <!-- Head -->
-    <circle class="figure" cx="60" cy="85" r="15"/>
+    <circle cx="40" cy="80" r="14"/>
     
-    <!-- Body - straight line -->
-    <rect class="figure" transform="rotate(0, 110, 90)" x="60" y="85" width="80" height="20" rx="5" ry="5"/>
+    <!-- Arms -->
+    <line x1="40" y1="100" x2="60" y2="130"/>
     
-    <!-- Arms - in plank position -->
-    <line class="outline" x1="75" y1="105" x2="75" y2="120"/>
-    <line class="outline" x1="90" y1="105" x2="90" y2="120"/>
+    <!-- Elbows to ground -->
+    <line x1="60" y1="130" x2="60" y2="160"/>
     
-    <!-- Legs - extended -->
-    <line class="outline" x1="140" y1="105" x2="140" y2="125"/>
-    <line class="outline" x1="140" y1="105" x2="140" y2="125"/>
+    <!-- Torso straight line -->
+    <line x1="60" y1="130" x2="150" y2="130"/>
+    
+    <!-- Legs -->
+    <line x1="150" y1="130" x2="180" y2="160"/>
   </g>
 </svg>
