@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <style>
+    .card-bg { fill: #f0f5ff; stroke: #e0e7ff; stroke-width: 1; }
+    .figure { fill: #4361ee; }
+    .title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #172b4d; text-anchor: middle; }
+    .meta-text { font-family: Arial, sans-serif; font-size: 12px; fill: #4361ee; font-weight: 500; text-anchor: middle; }
+  </style>
+  
+  <!-- Background -->
+  <rect class="card-bg" x="10" y="10" width="380" height="180" rx="8" ry="8"/>
+  
+  <!-- Exercise icon -->
+  <circle class="figure" cx="50" cy="40" r="15"/>
+  
+  <!-- Exercise title -->
+  <text class="title" x="200" y="40">{{EXERCISE_NAME}}</text>
+  
+  <!-- Exercise figure -->
+  <g id="figure-container" transform="translate(200, 100)">
+    <!-- Will be dynamically populated -->
+  </g>
+  
+  <!-- Exercise metadata -->
+  <text class="meta-text" x="100" y="170">Sets: {{SETS}}</text>
+  <text class="meta-text" x="200" y="170">Reps: {{REPS}}</text>
+  <text class="meta-text" x="300" y="170">Rest: {{REST}}</text>
+</svg>

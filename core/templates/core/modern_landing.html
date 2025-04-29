@@ -38,6 +38,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'core/css/modern-style.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/exercise-cards.css' %}">
 </head>
 <body>
     <!-- Language feedback message -->
@@ -350,90 +351,9 @@
                     <p class="text-gray-600 max-w-2xl mx-auto">Our comprehensive library includes a variety of exercises with clear instructions</p>
                 </div>
                 
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Exercise Card: Jumping Jacks -->
-                    <div class="exercise-card">
-                        <div class="exercise-image">
-                            <object data="{% static 'core/svg/jumping-jacks.svg' %}" type="image/svg+xml" width="120" height="120">
-                                <img src="{% static 'core/svg/jumping-jacks.svg' %}" alt="Jumping Jacks" width="120" height="120">
-                            </object>
-                        </div>
-                        <div class="exercise-details">
-                            <div class="flex items-center">
-                                <div class="exercise-icon-wrapper mr-3">
-                                    <i class="fas fa-running text-primary"></i>
-                                </div>
-                                <h3 class="text-lg font-semibold">Jumping Jacks</h3>
-                            </div>
-                            <div class="exercise-meta">
-                                <span class="exercise-meta-item">Sets: 3</span>
-                                <span class="exercise-meta-item">Reps: 15-20</span>
-                                <span class="exercise-meta-item">Rest: 30s</span>
-                            </div>
-                            <p class="exercise-description">
-                                A full-body exercise that increases your heart rate while working your arms, legs, and core simultaneously.
-                            </p>
-                            <button onclick="showExerciseDetails('Jumping Jacks')" class="mt-4 text-primary font-medium hover:underline flex items-center">
-                                <i class="fas fa-info-circle mr-1"></i> View Details
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Exercise Card: High Knees -->
-                    <div class="exercise-card">
-                        <div class="exercise-image">
-                            <object data="{% static 'core/svg/high-knees.svg' %}" type="image/svg+xml" width="120" height="120">
-                                <img src="{% static 'core/svg/high-knees.svg' %}" alt="High Knees" width="120" height="120">
-                            </object>
-                        </div>
-                        <div class="exercise-details">
-                            <div class="flex items-center">
-                                <div class="exercise-icon-wrapper mr-3">
-                                    <i class="fas fa-running text-primary"></i>
-                                </div>
-                                <h3 class="text-lg font-semibold">High Knees</h3>
-                            </div>
-                            <div class="exercise-meta">
-                                <span class="exercise-meta-item">Sets: 3</span>
-                                <span class="exercise-meta-item">Reps: 45s</span>
-                                <span class="exercise-meta-item">Rest: 30s</span>
-                            </div>
-                            <p class="exercise-description">
-                                An intense cardio exercise that strengthens your legs while elevating your heart rate and burning calories.
-                            </p>
-                            <button onclick="showExerciseDetails('High Knees')" class="mt-4 text-primary font-medium hover:underline flex items-center">
-                                <i class="fas fa-info-circle mr-1"></i> View Details
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Exercise Card: Squats -->
-                    <div class="exercise-card">
-                        <div class="exercise-image">
-                            <object data="{% static 'core/svg/squats.svg' %}" type="image/svg+xml" width="120" height="120">
-                                <img src="{% static 'core/svg/squats.svg' %}" alt="Squats" width="120" height="120">
-                            </object>
-                        </div>
-                        <div class="exercise-details">
-                            <div class="flex items-center">
-                                <div class="exercise-icon-wrapper mr-3">
-                                    <i class="fas fa-dumbbell text-primary"></i>
-                                </div>
-                                <h3 class="text-lg font-semibold">Squats</h3>
-                            </div>
-                            <div class="exercise-meta">
-                                <span class="exercise-meta-item">Sets: 3</span>
-                                <span class="exercise-meta-item">Reps: 12-15</span>
-                                <span class="exercise-meta-item">Rest: 60s</span>
-                            </div>
-                            <p class="exercise-description">
-                                A fundamental lower body exercise that targets your quadriceps, hamstrings, and glutes for strength and power.
-                            </p>
-                            <button onclick="showExerciseDetails('Squats')" class="mt-4 text-primary font-medium hover:underline flex items-center">
-                                <i class="fas fa-info-circle mr-1"></i> View Details
-                            </button>
-                        </div>
-                    </div>
+                <!-- Exercise display container with modern cards -->
+                <div data-exercise-container data-exercise-type="general" data-exercise-count="3">
+                    <!-- Will be dynamically populated by exercise-display.js -->
                 </div>
                 
                 <div class="text-center mt-10">
@@ -522,5 +442,6 @@
 
     <!-- Custom JS -->
     <script src="{% static 'core/js/enhanced-main.js' %}"></script>
+    <script src="{% static 'core/js/exercise-display.js' %}"></script>
 </body>
 </html>

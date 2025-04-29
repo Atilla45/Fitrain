@@ -125,7 +125,7 @@ def create_fitness_plan(answers):
 
 def landing_page(request):
     """Serves the main landing/conversation page."""
-    return render(request, 'core/landing.html')
+    return render(request, 'core/modern_landing.html')
 
 
 @require_POST
