@@ -708,14 +708,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get exercise image URL based on name
     function getExerciseImageUrl(exerciseName) {
-        // Map of exercise names to image URLs
+        // Map of exercise names to SVG files (preferred) or fallback image URLs
         const exerciseImages = {
-            'push-ups': 'https://cdn.imgbin.com/1/1/12/push-up-illustration-png-WDNgDvMh.jpg',
-            'squats': 'https://qph.cf2.quoracdn.net/main-qimg-cf9b412d533486267afb9e5c8ecfdabf-lq',
+            'jumping jacks': '/static/core/svg/jumping-jacks.svg',
+            'high knees': '/static/core/svg/high-knees.svg',
+            'squats': '/static/core/svg/squats.svg',
+            'push-ups': '/static/core/svg/push-ups.svg',
+            'plank': '/static/core/svg/plank.svg',
+            
+            // Fallback images for exercises without SVGs
             'lunges': 'https://img.freepik.com/premium-vector/woman-doing-forward-lunge-exercise-flat-vector-illustration-isolated_132971-120.jpg',
-            'plank': 'https://i.pinimg.com/originals/d1/45/35/d14535b33c06b0c5f1a69bccbc9a4ae8.gif',
             'glute bridges': 'https://i.pinimg.com/originals/dd/4a/8e/dd4a8e50da6c95830e76e9317d1a0f3f.jpg',
-            'jumping jacks': 'https://i.pinimg.com/originals/6d/67/94/6d6794e7b31058ae20db31e7ac97ea6b.jpg',
             'mountain climbers': 'https://i.pinimg.com/originals/0f/36/e1/0f36e13768b448bd56562b468334c894.jpg',
             'burpees': 'https://i.pinimg.com/736x/78/92/85/7892853356ef612efd682a040fd7bb5e.jpg',
             'bench press': 'https://i.pinimg.com/originals/51/8a/a2/518aa210f4e4ac5be2a4a88797598888.jpg',
@@ -728,8 +731,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'calf raises': 'https://i.pinimg.com/originals/8f/87/01/8f8701d9e82ca2bd254b3a61df228ecf.jpg',
             'leg raises': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgVF00pFkXejD8KZRG7Syc9wcPRKiJrPFW3A&usqp=CAU',
             'crunches': 'https://i.pinimg.com/originals/48/d4/6d/48d46d8be27a27b6162616d39fae3588.jpg',
-            'russian twists': 'https://assets.myworkouts.io/exercises-media/Vg2njCmGPzS6QraMB/russian_twist_female_v14_gif.gif',
-            'high knees': 'https://i.pinimg.com/736x/13/2c/37/132c372ab48b87faf6b3c21d48e82b8c.jpg'
+            'russian twists': 'https://assets.myworkouts.io/exercises-media/Vg2njCmGPzS6QraMB/russian_twist_female_v14_gif.gif'
         };
         
         // Convert exercise name to lowercase for case-insensitive matching
@@ -742,8 +744,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // If no match found, return a default image
-        return 'https://i.pinimg.com/originals/3f/2c/97/3f2c979b214d49faf3997e1b05481aee.png';
+        // If no match found, return a default SVG
+        return '/static/core/svg/jumping-jacks.svg';
     }
     
     // Get exercise instructions

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <style>
+    .figure { fill: #4361ee; }
+    .outline { fill: none; stroke: #4361ee; stroke-width: 2; stroke-linecap: round; }
+    .bg { fill: #f0f5ff; }
+  </style>
+  <circle class="bg" cx="100" cy="100" r="90"/>
+  <g>
+    <!-- Head -->
+    <circle class="figure" cx="60" cy="85" r="15"/>
+    
+    <!-- Body - straight line -->
+    <rect class="figure" transform="rotate(0, 110, 90)" x="60" y="85" width="80" height="20" rx="5" ry="5"/>
+    
+    <!-- Arms - in plank position -->
+    <line class="outline" x1="75" y1="105" x2="75" y2="120"/>
+    <line class="outline" x1="90" y1="105" x2="90" y2="120"/>
+    
+    <!-- Legs - extended -->
+    <line class="outline" x1="140" y1="105" x2="140" y2="125"/>
+    <line class="outline" x1="140" y1="105" x2="140" y2="125"/>
+  </g>
+</svg>

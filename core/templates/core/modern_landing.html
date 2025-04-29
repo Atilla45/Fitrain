@@ -1,0 +1,526 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{% csrf_token %}">
+    <title>FitPlan - Your Personalized Fitness Journey</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3f37c9',
+                        accent: '#4cc9f0',
+                        'accent-green': '#4adf86',
+                        'accent-yellow': '#ffca28',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/modern-style.css' %}">
+</head>
+<body>
+    <!-- Language feedback message -->
+    <div id="language-feedback" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white py-2 px-4 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300">
+        Language changed!
+    </div>
+
+    <!-- Header -->
+    <header class="modern-header sticky top-0 z-40 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-primary mr-8">
+                        <span class="text-gradient">FitPlan</span>
+                    </h1>
+                    <nav class="hidden md:flex space-x-6">
+                        <a href="#features" class="nav-link">Features</a>
+                        <a href="#how-it-works" class="nav-link">How It Works</a>
+                        <a href="#exercises" class="nav-link">Exercises</a>
+                    </nav>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <select id="language-selector" onchange="changeLanguage(this.value)" class="bg-gray-50 border border-gray-200 text-gray-700 rounded-lg px-3 py-2 appearance-none cursor-pointer pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="en">English</option>
+                            <option value="az">Azərbaycan</option>
+                            <option value="tr">Türkçe</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container mx-auto px-4">
+                <div class="md:flex items-center">
+                    <div class="md:w-1/2 md:pr-12 mb-10 md:mb-0">
+                        <h1 class="hero-title">
+                            Move to <span class="text-gradient">Maintain</span> Your Health
+                        </h1>
+                        <p class="hero-subtitle">
+                            Create your personalized fitness plan with our AI-powered assistant. 
+                            Get workouts tailored to your goals, schedule, and fitness level.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <button id="startVoiceBtn" onclick="startVoiceInput()" class="btn-primary flex items-center">
+                                <i class="fas fa-microphone mr-2"></i> Start Voice Assistant
+                            </button>
+                            <button id="showFormBtn" onclick="showFormInput()" class="btn-outline flex items-center">
+                                <i class="fas fa-keyboard mr-2"></i> Use Text Form
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <img src="{% static 'core/img/fitness-hero.jpg' %}" alt="Person exercising" class="hero-image shadow-xl" onerror="this.src='https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80'">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main content -->
+        <section class="py-12 bg-background-light">
+            <div class="container mx-auto px-4">
+                <!-- Voice Input Status -->
+                <div id="voiceInputStatus" class="hidden mb-8 bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-microphone text-white voice-active-icon"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg">Voice Recognition Active</h3>
+                            <p id="recognitionStatus" class="text-gray-600">Listening...</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center mt-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
+                            <div id="voiceProgress" class="bg-primary h-2 rounded-full" style="width: 0"></div>
+                        </div>
+                        <button id="stopVoiceBtn" onclick="finishVoiceInput()" class="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- AI Conversation Container -->
+                <div id="conversationContainer" class="hidden mb-8 conversation-container">
+                    <div class="conversation-header flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-robot text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold" id="conversationTitle">Conversation with Aria</h3>
+                    </div>
+                    
+                    <div id="messagesContainer" class="messages-container">
+                        <!-- Messages will be added here dynamically -->
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4 mt-6">
+                        <button id="continueVoiceBtn" onclick="startVoiceInput(true)" class="btn-primary flex items-center">
+                            <i class="fas fa-microphone mr-2"></i> Continue with Voice
+                        </button>
+                        <button id="completeConversationBtn" onclick="completeConversation()" class="hidden btn-primary bg-accent-green flex items-center">
+                            <i class="fas fa-check mr-2"></i> Generate My Plan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Input (Initially Hidden) -->
+                <div id="formInput" class="hidden bg-white rounded-xl shadow-md p-6 mb-8">
+                    <form id="fitnessForm" class="space-y-6" onsubmit="event.preventDefault(); 
+                        const formData = {
+                            name: document.getElementById('name').value,
+                            goal: document.getElementById('goal').value,
+                            days: document.getElementById('days').value,
+                            level: document.getElementById('level').value,
+                            preference: document.getElementById('preference').value,
+                            restrictions: document.getElementById('restrictions').value
+                        };
+                        
+                        // Show a loading indicator
+                        formInput.innerHTML = '<div class=\'text-center py-8\'><div class=\'inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4\'></div><p class=\'text-gray-700\'>Creating your personalized fitness plan...</p></div>';
+                        
+                        // Generate the plan
+                        generatePlan(formData);">
+                        {% csrf_token %}
+                        <h3 class="text-xl font-semibold mb-4">Create Your Personalized Plan</h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="form-label">Your Name</label>
+                                <input type="text" id="name" name="name" class="form-control w-full" required>
+                            </div>
+                            
+                            <div>
+                                <label for="goal" class="form-label">Main Fitness Goal</label>
+                                <select id="goal" name="goal" class="form-control w-full">
+                                    <option value="general">General Fitness & Health</option>
+                                    <option value="weight_loss">Weight Loss</option>
+                                    <option value="muscle">Build Muscle</option>
+                                    <option value="strength">Increase Strength</option>
+                                    <option value="endurance">Improve Endurance</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="days" class="form-label">Days Per Week Available</label>
+                                <select id="days" name="days" class="form-control w-full">
+                                    <option value="2">2 days</option>
+                                    <option value="3" selected>3 days</option>
+                                    <option value="4">4 days</option>
+                                    <option value="5">5 days</option>
+                                    <option value="6">6 days</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="level" class="form-label">Experience Level</label>
+                                <select id="level" name="level" class="form-control w-full">
+                                    <option value="beginner" selected>Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="preference" class="form-label">Workout Preference</label>
+                                <select id="preference" name="preference" class="form-control w-full">
+                                    <option value="home" selected>Home Workouts</option>
+                                    <option value="gym">Gym Workouts</option>
+                                    <option value="outdoor">Outdoor Workouts</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="restrictions" class="form-label">Any Physical Restrictions?</label>
+                                <textarea id="restrictions" name="restrictions" rows="2" class="form-control w-full resize-none" placeholder="e.g., knee issues, back pain, etc. Leave blank if none."></textarea>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary w-full py-3 mt-4">
+                            <i class="fas fa-dumbbell mr-2"></i> Generate My Fitness Plan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Results preview will be shown here -->
+                <div id="planResults" class="hidden">
+                    <div class="plan-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold" id="planTitle"></h2>
+                            <div>
+                                <a href="#" id="downloadPdfBtn" class="btn-primary text-sm">
+                                    <i class="fas fa-file-pdf mr-1"></i> Download PDF
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-700 mb-6" id="planIntro"></p>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold mb-4">Weekly Schedule</h3>
+                            <div id="weeklySchedule" class="grid grid-cols-1 md:grid-cols-7 gap-3"></div>
+                        </div>
+                        
+                        <div id="dietaryGuidelines" class="mb-8">
+                            <h3 class="text-lg font-semibold mb-4">Dietary Guidelines</h3>
+                            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                <div id="dietText" class="text-gray-700"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="workoutDetails" class="mb-8">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        
+                        <div class="flex justify-end mt-6">
+                            <button id="newPlanBtn" onclick="planResults.classList.add('hidden');showFormInput();" class="btn-outline">
+                                <i class="fas fa-redo mr-2"></i> Create New Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Why Choose FitPlan?</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Our platform offers everything you need to achieve your fitness goals with personalized plans and expert guidance.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="feature-card">
+                        <div class="feature-icon bg-blue-100 text-primary">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="feature-title">AI-Powered Fitness Assistant</h3>
+                        <p class="text-gray-600">Our intelligent assistant creates customized workout plans based on your goals, fitness level, and schedule.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon bg-green-100 text-green-600">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="feature-title">Multilingual Support</h3>
+                        <p class="text-gray-600">Communicate in your preferred language - we support English, Azerbaijani, and Turkish with native voice interactions.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon bg-purple-100 text-purple-600">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <h3 class="feature-title">Detailed Exercise Guidance</h3>
+                        <p class="text-gray-600">Get clear visual instructions and tips for every exercise to ensure proper form and maximize results.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- How It Works -->
+        <section id="how-it-works" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-4">How It Works</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Get your personalized fitness plan in 3 simple steps</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-primary text-2xl font-bold">1</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Share Your Goals</h3>
+                        <p class="text-gray-600">Tell us about your fitness goals, schedule preferences, and experience level using voice or text.</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-primary text-2xl font-bold">2</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Get Your Plan</h3>
+                        <p class="text-gray-600">Our AI creates a personalized workout plan tailored to your specific needs and circumstances.</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-primary text-2xl font-bold">3</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Start Training</h3>
+                        <p class="text-gray-600">Follow your custom plan with detailed exercise guides and dietary recommendations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Exercise Examples -->
+        <section id="exercises" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Exercise Library</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Our comprehensive library includes a variety of exercises with clear instructions</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Exercise Card: Jumping Jacks -->
+                    <div class="exercise-card">
+                        <div class="exercise-image">
+                            <object data="{% static 'core/svg/jumping-jacks.svg' %}" type="image/svg+xml" width="120" height="120">
+                                <img src="{% static 'core/svg/jumping-jacks.svg' %}" alt="Jumping Jacks" width="120" height="120">
+                            </object>
+                        </div>
+                        <div class="exercise-details">
+                            <div class="flex items-center">
+                                <div class="exercise-icon-wrapper mr-3">
+                                    <i class="fas fa-running text-primary"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold">Jumping Jacks</h3>
+                            </div>
+                            <div class="exercise-meta">
+                                <span class="exercise-meta-item">Sets: 3</span>
+                                <span class="exercise-meta-item">Reps: 15-20</span>
+                                <span class="exercise-meta-item">Rest: 30s</span>
+                            </div>
+                            <p class="exercise-description">
+                                A full-body exercise that increases your heart rate while working your arms, legs, and core simultaneously.
+                            </p>
+                            <button onclick="showExerciseDetails('Jumping Jacks')" class="mt-4 text-primary font-medium hover:underline flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card: High Knees -->
+                    <div class="exercise-card">
+                        <div class="exercise-image">
+                            <object data="{% static 'core/svg/high-knees.svg' %}" type="image/svg+xml" width="120" height="120">
+                                <img src="{% static 'core/svg/high-knees.svg' %}" alt="High Knees" width="120" height="120">
+                            </object>
+                        </div>
+                        <div class="exercise-details">
+                            <div class="flex items-center">
+                                <div class="exercise-icon-wrapper mr-3">
+                                    <i class="fas fa-running text-primary"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold">High Knees</h3>
+                            </div>
+                            <div class="exercise-meta">
+                                <span class="exercise-meta-item">Sets: 3</span>
+                                <span class="exercise-meta-item">Reps: 45s</span>
+                                <span class="exercise-meta-item">Rest: 30s</span>
+                            </div>
+                            <p class="exercise-description">
+                                An intense cardio exercise that strengthens your legs while elevating your heart rate and burning calories.
+                            </p>
+                            <button onclick="showExerciseDetails('High Knees')" class="mt-4 text-primary font-medium hover:underline flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card: Squats -->
+                    <div class="exercise-card">
+                        <div class="exercise-image">
+                            <object data="{% static 'core/svg/squats.svg' %}" type="image/svg+xml" width="120" height="120">
+                                <img src="{% static 'core/svg/squats.svg' %}" alt="Squats" width="120" height="120">
+                            </object>
+                        </div>
+                        <div class="exercise-details">
+                            <div class="flex items-center">
+                                <div class="exercise-icon-wrapper mr-3">
+                                    <i class="fas fa-dumbbell text-primary"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold">Squats</h3>
+                            </div>
+                            <div class="exercise-meta">
+                                <span class="exercise-meta-item">Sets: 3</span>
+                                <span class="exercise-meta-item">Reps: 12-15</span>
+                                <span class="exercise-meta-item">Rest: 60s</span>
+                            </div>
+                            <p class="exercise-description">
+                                A fundamental lower body exercise that targets your quadriceps, hamstrings, and glutes for strength and power.
+                            </p>
+                            <button onclick="showExerciseDetails('Squats')" class="mt-4 text-primary font-medium hover:underline flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-10">
+                    <button class="btn-outline">
+                        <i class="fas fa-th-list mr-2"></i> View All Exercises
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CTA Section -->
+        <section class="py-16 bg-gradient-to-r from-primary to-secondary text-white">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold mb-6">Ready to Transform Your Fitness Journey?</h2>
+                <p class="text-xl opacity-90 mb-8 max-w-2xl mx-auto">Get your personalized fitness plan now and start working towards your goals with expert guidance.</p>
+                <button onclick="document.getElementById('startVoiceBtn').scrollIntoView({behavior: 'smooth'})" class="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-8 rounded-lg shadow-md transition transform hover:-translate-y-1">
+                    <i class="fas fa-rocket mr-2"></i> Start Now
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">FitPlan</h3>
+                    <p class="text-gray-400 mb-4">Your AI-powered fitness companion for personalized workout plans in multiple languages.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition">Features</a></li>
+                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white transition">How It Works</a></li>
+                        <li><a href="#exercises" class="text-gray-400 hover:text-white transition">Exercise Library</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Languages</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="changeLanguage('en');return false;" class="text-gray-400 hover:text-white transition">English</a></li>
+                        <li><a href="#" onclick="changeLanguage('az');return false;" class="text-gray-400 hover:text-white transition">Azərbaycan</a></li>
+                        <li><a href="#" onclick="changeLanguage('tr');return false;" class="text-gray-400 hover:text-white transition">Türkçe</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2025 FitPlan. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Exercise Modal -->
+    <div id="exerciseModal" class="exercise-modal">
+        <div class="exercise-modal-content">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalExerciseTitle" class="text-xl font-semibold text-gray-800"></h3>
+                    <button onclick="document.getElementById('exerciseModal').classList.remove('active')" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="text-center mb-6">
+                    <img id="modalExerciseImage" src="" alt="Exercise demonstration" class="exercise-image">
+                </div>
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2">Instructions:</h4>
+                    <ol id="modalExerciseInstructions" class="list-decimal ml-6 space-y-2"></ol>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold mb-2">Tips:</h4>
+                    <p class="text-gray-700">Start with fewer repetitions and perfect your form before increasing the volume. Always warm up before beginning your workout.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{% static 'core/js/enhanced-main.js' %}"></script>
+</body>
+</html>
