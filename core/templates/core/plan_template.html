@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ plan.plan_title }}</title>
+    <style>
+        /* PDF Styles */
+        @page {
+            size: letter portrait;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(to right, #4a6bff, #33439c);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 28px;
+            margin: 0 0 10px 0;
+        }
+        h2 {
+            font-size: 22px;
+            color: #4a6bff;
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        h3 {
+            font-size: 18px;
+            color: #33439c;
+            margin: 20px 0 10px 0;
+        }
+        p {
+            margin: 0 0 15px 0;
+        }
+        .intro {
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .schedule-day {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .schedule-day h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #4a6bff;
+        }
+        .workout-box {
+            background-color: #f0f4ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .exercise {
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5f1;
+        }
+        .exercise:last-child {
+            border-bottom: none;
+        }
+        .exercise-name {
+            font-weight: bold;
+            color: #33439c;
+        }
+        .exercise-details {
+            color: #666;
+            font-size: 14px;
+        }
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .tips-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ plan.plan_title }}</h1>
+            <p>Personalized for {{ plan.metadata.name|default:"You" }}</p>
+        </header>
+
+        <section>
+            <p class="intro">{{ plan.introduction }}</p>
+            
+            <h2>Your Weekly Schedule</h2>
+            <div class="schedule-grid">
+                {% for day, workout in plan.weekly_schedule.items %}
+                <div class="schedule-day">
+                    <h4>{{ day }}</h4>
+                    <p>{{ workout }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h2>Workout Details</h2>
+            {% for workout_name, exercises in plan.workouts.items %}
+            <div class="workout-box">
+                <h3>{{ workout_name }}</h3>
+                {% for exercise in exercises %}
+                <div class="exercise">
+                    <div class="exercise-name">{{ exercise.name }}</div>
+                    <div class="exercise-details">{{ exercise.sets }} sets x {{ exercise.reps }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <h2>Nutrition Guidelines</h2>
+            <ul>
+                {% for guideline in plan.diet_guidelines %}
+                <li>{{ guideline }}</li>
+                {% endfor %}
+            </ul>
+
+            <div class="tips-section">
+                <h2>Fitness Tips</h2>
+                <ul>
+                    {% for tip in plan.tips %}
+                    <li>{{ tip }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <footer>
+            <p>FitPlan Builder - Your personalized fitness journey</p>
+            <p>Generated on {% now "F j, Y" %}</p>
+        </footer>
+    </div>
+</body>
+</html>

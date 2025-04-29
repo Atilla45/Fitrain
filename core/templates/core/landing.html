@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Planner - Create Your Personalized Plan</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom styles -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-3xl font-bold">FitPlan Builder</h1>
+                    <p class="text-xl opacity-80">Your personalized fitness journey starts here</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#features" class="text-white hover:text-blue-200 transition">Features</a>
+                    <a href="#how-it-works" class="text-white hover:text-blue-200 transition">How It Works</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <section class="mb-16">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="md:flex">
+                    <div class="md:w-1/2 p-8 md:p-12">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-6">Build Your Custom Fitness Plan</h2>
+                        <p class="text-gray-600 mb-8">Answer a few simple questions and we'll create a personalized workout routine that fits your goals, schedule, and preferences.</p>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                                <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">1</span>
+                                Voice or Text Input
+                            </h3>
+                            <p class="text-gray-600 mb-4">Choose how you'd like to provide your information.</p>
+                            <div class="flex space-x-4">
+                                <button id="startVoiceBtn" class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                                    <i class="fas fa-microphone mr-2"></i> Start Voice Input
+                                </button>
+                                <button id="showFormBtn" class="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition">
+                                    <i class="fas fa-keyboard mr-2"></i> Use Text Form
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Voice Input Status -->
+                        <div id="voiceInputStatus" class="hidden mb-8 p-4 bg-gray-100 rounded-lg">
+                            <p class="font-medium mb-2">Voice Recognition Active</p>
+                            <p id="recognitionStatus" class="text-gray-600">Listening...</p>
+                            <div class="flex items-center mt-4">
+                                <div class="w-full bg-gray-300 rounded-full h-2 mr-2">
+                                    <div id="voiceProgress" class="bg-blue-600 h-2 rounded-full" style="width: 0"></div>
+                                </div>
+                                <button id="stopVoiceBtn" class="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form Input (Initially Hidden) -->
+                        <div id="formInput" class="hidden">
+                            <form id="fitnessForm" class="space-y-4">
+                                <div>
+                                    <label for="name" class="block text-gray-700 font-medium mb-1">Your Name</label>
+                                    <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label for="goal" class="block text-gray-700 font-medium mb-1">Main Fitness Goal</label>
+                                    <select id="goal" name="goal" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="general">General Fitness & Health</option>
+                                        <option value="weight_loss">Weight Loss</option>
+                                        <option value="muscle">Build Muscle</option>
+                                        <option value="strength">Increase Strength</option>
+                                        <option value="endurance">Improve Endurance</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="days" class="block text-gray-700 font-medium mb-1">Days Per Week Available</label>
+                                    <select id="days" name="days" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="2">2 days</option>
+                                        <option value="3" selected>3 days</option>
+                                        <option value="4">4 days</option>
+                                        <option value="5">5 days</option>
+                                        <option value="6">6 days</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="level" class="block text-gray-700 font-medium mb-1">Experience Level</label>
+                                    <select id="level" name="level" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="beginner" selected>Beginner</option>
+                                        <option value="intermediate">Intermediate</option>
+                                        <option value="advanced">Advanced</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="preference" class="block text-gray-700 font-medium mb-1">Workout Preference</label>
+                                    <select id="preference" name="preference" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="home" selected>Home Workouts</option>
+                                        <option value="gym">Gym Workouts</option>
+                                        <option value="outdoor">Outdoor Workouts</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="restrictions" class="block text-gray-700 font-medium mb-1">Any Physical Restrictions?</label>
+                                    <textarea id="restrictions" name="restrictions" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., knee issues, back pain, etc. Leave blank if none."></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition">
+                                    Generate My Fitness Plan
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Results preview will be shown here -->
+                        <div id="planResults" class="hidden mt-8">
+                            <div class="bg-gray-100 rounded-lg p-6">
+                                <h3 class="text-2xl font-bold text-gray-800 mb-4" id="planTitle"></h3>
+                                <p class="text-gray-600 mb-4" id="planIntro"></p>
+                                
+                                <div class="mb-4">
+                                    <h4 class="font-semibold mb-2">Weekly Schedule:</h4>
+                                    <div id="weeklySchedule" class="grid grid-cols-1 md:grid-cols-3 gap-2"></div>
+                                </div>
+                                
+                                <div class="flex justify-between mt-6">
+                                    <a href="#" id="downloadPdfBtn" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                                        <i class="fas fa-file-pdf mr-2"></i> Download PDF
+                                    </a>
+                                    <button id="newPlanBtn" class="inline-flex items-center bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg transition">
+                                        <i class="fas fa-redo mr-2"></i> Create New Plan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-600 p-8 md:p-12 text-white flex items-center">
+                        <div>
+                            <h2 class="text-3xl font-bold mb-6">Achieve Your Fitness Goals</h2>
+                            <div class="space-y-6">
+                                <div class="flex items-start">
+                                    <div class="mr-4 mt-1 text-2xl"><i class="fas fa-dumbbell"></i></div>
+                                    <div>
+                                        <h3 class="font-semibold text-xl mb-1">Personalized Workouts</h3>
+                                        <p class="opacity-80">Get a custom plan tailored to your goals, experience, and available time.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="mr-4 mt-1 text-2xl"><i class="fas fa-calendar-check"></i></div>
+                                    <div>
+                                        <h3 class="font-semibold text-xl mb-1">Flexible Scheduling</h3>
+                                        <p class="opacity-80">Fit your workouts into your busy life with adaptable schedules.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="mr-4 mt-1 text-2xl"><i class="fas fa-utensils"></i></div>
+                                    <div>
+                                        <h3 class="font-semibold text-xl mb-1">Nutrition Guidance</h3>
+                                        <p class="opacity-80">Basic diet recommendations to complement your fitness routine.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="mr-4 mt-1 text-2xl"><i class="fas fa-file-download"></i></div>
+                                    <div>
+                                        <h3 class="font-semibold text-xl mb-1">Downloadable PDF</h3>
+                                        <p class="opacity-80">Take your plan anywhere - print it or keep it on your phone.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-12">How FitPlan Builder Works</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-comment-dots text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">1. Tell Us About Yourself</h3>
+                    <p class="text-gray-600">Use our voice interface or simple form to share your fitness goals and preferences.</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-cogs text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">2. We Create Your Plan</h3>
+                    <p class="text-gray-600">Our system generates a tailored workout plan based on your unique requirements.</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-running text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">3. Start Your Journey</h3>
+                    <p class="text-gray-600">Download your plan as a PDF and begin your path to a healthier, stronger you.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="mb-16">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-center mb-8">Fitness Tips for Success</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex">
+                            <div class="mr-4 text-blue-600 text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Consistency Over Intensity</h3>
+                                <p class="text-gray-600">Regular, moderate workouts are better than occasional intense sessions.</p>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="mr-4 text-blue-600 text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Progressive Overload</h3>
+                                <p class="text-gray-600">Gradually increase intensity to continuously challenge your body.</p>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="mr-4 text-blue-600 text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Proper Nutrition</h3>
+                                <p class="text-gray-600">Your diet plays a crucial role in achieving your fitness goals.</p>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="mr-4 text-blue-600 text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Rest and Recovery</h3>
+                                <p class="text-gray-600">Allow your muscles time to repair and grow stronger.</p>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="mr-4 text-blue-600 text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Hydration Matters</h3>
+                                <p class="text-gray-600">Drink plenty of water before, during, and after workouts.</p>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="mr-4 text-blue-600 text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Track Your Progress</h3>
+                                <p class="text-gray-600">Keep a fitness journal to see how far you've come.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-2xl font-bold">FitPlan Builder</h2>
+                    <p class="text-gray-400">Your personalized fitness journey</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">&copy; 2023 FitPlan Builder. All rights reserved.</p>
+                    <p class="text-gray-500 text-sm mt-1">This is a demonstration application.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {% load static %}
+    <script src="{% static 'core/js/main.js' %}"></script>
+</body>
+</html>
