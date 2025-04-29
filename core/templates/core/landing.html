@@ -140,10 +140,10 @@
                             </h3>
                             <p class="text-gray-600 mb-4">Choose how you'd like to provide your information.</p>
                             <div class="flex space-x-4">
-                                <button id="startVoiceBtn" class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                                <button id="startVoiceBtn" onclick="startVoiceInput()" class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
                                     <i class="fas fa-microphone mr-2"></i> Start Voice Input
                                 </button>
-                                <button id="showFormBtn" class="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition">
+                                <button id="showFormBtn" onclick="showFormInput()" class="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition">
                                     <i class="fas fa-keyboard mr-2"></i> Use Text Form
                                 </button>
                             </div>
@@ -157,7 +157,7 @@
                                 <div class="w-full bg-gray-300 rounded-full h-2 mr-2">
                                     <div id="voiceProgress" class="bg-blue-600 h-2 rounded-full" style="width: 0"></div>
                                 </div>
-                                <button id="stopVoiceBtn" class="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full">
+                                <button id="stopVoiceBtn" onclick="if(recognition){recognition.stop();isListening=false;voiceInputStatus.classList.add('hidden');startVoiceBtn.classList.remove('voice-active-btn');}" class="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full">
                                     <i class="fas fa-stop"></i>
                                 </button>
                             </div>
@@ -165,7 +165,59 @@
 
                         <!-- Form Input (Initially Hidden) -->
                         <div id="formInput" class="hidden">
-                            <form id="fitnessForm" class="space-y-4">
+                            <form id="fitnessForm" class="space-y-4" onsubmit="event.preventDefault(); 
+                              const formData = {
+                                name: document.getElementById('name').value,
+                                goal: document.getElementById('goal').value,
+                                days: document.getElementById('days').value,
+                                level: document.getElementById('level').value,
+                                preference: document.getElementById('preference').value,
+                                restrictions: document.getElementById('restrictions').value
+                              };
+                              
+                              // Get CSRF token
+                              const csrfToken = document.querySelector('meta[name=\'csrf-token\']').content;
+                              
+                              // Show a loading indicator
+                              formInput.innerHTML = '<div class=\'text-center py-8\'><div class=\'inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4\'></div><p class=\'text-gray-700\'>Creating your personalized fitness plan...</p></div>';
+                              
+                              // Make the API request
+                              fetch('/generate-plan/', {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify(formData)
+                              })
+                              .then(response => response.json())
+                              .then(data => {
+                                if (data.success) {
+                                  // Hide form, show results
+                                  formInput.classList.add('hidden');
+                                  
+                                  // Display the plan
+                                  const plan = data.plan;
+                                  planTitle.textContent = plan.plan_title || 'Your Personalized Fitness Plan';
+                                  planIntro.textContent = plan.introduction || 'Here is your customized fitness plan.';
+                                  
+                                  // Set up download link
+                                  if (plan.pdfLink) downloadPdfBtn.href = plan.pdfLink;
+                                  
+                                  // Show the results section
+                                  planResults.classList.remove('hidden');
+                                } else {
+                                  alert('Error: ' + (data.error || 'Failed to generate fitness plan'));
+                                  formInput.innerHTML = '';
+                                  showFormInput();
+                                }
+                              })
+                              .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error: Failed to generate fitness plan. Please try again.');
+                                formInput.innerHTML = '';
+                                showFormInput();
+                              });">
                                 {% csrf_token %}
                                 <div>
                                     <label for="name" class="block text-gray-700 font-medium mb-1">Your Name</label>
@@ -225,14 +277,19 @@
                                 
                                 <div class="mb-4">
                                     <h4 class="font-semibold mb-2">Weekly Schedule:</h4>
-                                    <div id="weeklySchedule" class="grid grid-cols-1 md:grid-cols-3 gap-2"></div>
+                                    <div id="weeklySchedule" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                                </div>
+                                
+                                <div id="dietaryGuidelines" class="mb-4 bg-white p-4 rounded-lg shadow-sm">
+                                    <h4 class="font-semibold mb-2">Dietary Guidelines</h4>
+                                    <p id="dietText" class="text-gray-700"></p>
                                 </div>
                                 
                                 <div class="flex justify-between mt-6">
                                     <a href="#" id="downloadPdfBtn" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
                                         <i class="fas fa-file-pdf mr-2"></i> Download PDF
                                     </a>
-                                    <button id="newPlanBtn" class="inline-flex items-center bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg transition">
+                                    <button id="newPlanBtn" onclick="planResults.classList.add('hidden');formInput.classList.remove('hidden');" class="inline-flex items-center bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg transition">
                                         <i class="fas fa-redo mr-2"></i> Create New Plan
                                     </button>
                                 </div>
@@ -374,6 +431,72 @@
     </footer>
 
     {% load static %}
+    <script>
+        // Helper functions for inline handlers
+        function startVoiceInput() {
+            const voiceInputStatus = document.getElementById('voiceInputStatus');
+            const formInput = document.getElementById('formInput');
+            const planResults = document.getElementById('planResults');
+            const startVoiceBtn = document.getElementById('startVoiceBtn');
+            
+            // Show voice input UI, hide others
+            voiceInputStatus.classList.remove('hidden');
+            formInput.classList.add('hidden');
+            planResults.classList.add('hidden');
+            
+            // Add animation classes
+            startVoiceBtn.classList.add('voice-active-btn');
+            const iconElement = startVoiceBtn.querySelector('i');
+            if (iconElement) iconElement.classList.add('voice-active-icon');
+            
+            // Log for debugging
+            console.log("Voice input started - UI elements shown");
+            
+            // Check if the main.js file is properly loaded and has set up speech recognition
+            if (typeof window.recognition === 'undefined') {
+                voiceInputStatus.innerHTML = `
+                    <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg">
+                        <p class="font-medium">Speech recognition not available</p>
+                        <p class="mt-2">Please use the form input instead.</p>
+                        <button onclick="showFormInput()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition">
+                            Switch to Form
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function showFormInput() {
+            const voiceInputStatus = document.getElementById('voiceInputStatus');
+            const formInput = document.getElementById('formInput');
+            const planResults = document.getElementById('planResults');
+            const startVoiceBtn = document.getElementById('startVoiceBtn');
+            
+            // Show form, hide others
+            formInput.classList.remove('hidden');
+            voiceInputStatus.classList.add('hidden');
+            planResults.classList.add('hidden');
+            
+            // Remove animation classes if active
+            startVoiceBtn.classList.remove('voice-active-btn');
+            const iconElement = startVoiceBtn.querySelector('i');
+            if (iconElement) iconElement.classList.remove('voice-active-icon');
+            
+            // If form content was replaced with a loading indicator, restore the form
+            if (!document.getElementById('fitnessForm')) {
+                formInput.innerHTML = originalFormHTML || '';
+            }
+            
+            console.log("Form input shown");
+        }
+        
+        // Store original form HTML in case we need to restore it
+        const originalFormHTML = document.getElementById('formInput').innerHTML;
+        
+        // Make showFormInput available globally
+        window.showFormInput = showFormInput;
+        window.startVoiceInput = startVoiceInput;
+    </script>
     <script src="{% static 'core/js/main.js' %}"></script>
 </body>
 </html>
