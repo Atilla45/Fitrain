@@ -7,4 +7,5 @@ urlpatterns = [
     path('', views.landing_page, name='landing_page'),
     path('generate-plan/', views.generate_plan_view, name='generate_plan'),
     path('download-pdf/', views.download_pdf, name='download_pdf'),
+    path('process-voice/', views.process_voice, name='process_voice'),
 ]
