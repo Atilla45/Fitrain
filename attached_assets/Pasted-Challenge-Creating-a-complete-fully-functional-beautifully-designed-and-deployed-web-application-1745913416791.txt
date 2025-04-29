@@ -1,0 +1,917 @@
+Challenge: Creating a complete, fully functional, beautifully designed, and deployed web application like this within a single response is not feasible. Real-world applications require iterative development, testing, design refinement, and proper deployment configuration.
+Solution:
+Online Development Environment: The best way to achieve your goal of "running it online" without a local setup is to use a Cloud IDE. Platforms like Replit, Gitpod, or GitHub Codespaces provide a full development environment (editor, terminal, Python runtime, package installation) directly in your web browser.
+Recommendation: Replit is often the most beginner-friendly for this. It has templates that can get you started quickly with Python/Django and often handles system dependencies (like those needed for PDF generation) relatively well.
+Code Scaffolding: I can provide you with the essential code structure and key files (Python/Django backend, HTML templates, basic CSS using Tailwind for a clean look, and JavaScript for the voice interaction). This will be a strong starting point that you can load into a Cloud IDE.
+"Beautiful Design": I'll use Tailwind CSS via a CDN link in the HTML. Tailwind provides utility classes that make it easier to create clean, modern, and responsive designs quickly without writing lots of custom CSS. It won't be a bespoke graphical masterpiece, but it will look professional and visually appealing.
+Let's Generate the Code Scaffolding:
+Here are the key files. You would typically copy and paste these into the appropriate files within your chosen Cloud IDE (like a Replit Django project).
+1. requirements.txt (Dependencies)
+Tell the environment which Python packages to install.
+Django==5.*
+WeasyPrint>=52 # Handles PDF generation from HTML/CSS
+Use code with caution.
+Txt
+2. Project Structure (Conceptual)
+Imagine this structure inside your Replit project:
+fitness_planner/
+├── fitness_planner/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+├── core/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   │   └── __init__.py
+│   ├── models.py
+│   ├── templates/
+│   │   └── core/
+│   │       ├── landing.html
+│   │       └── plan_template.html
+│   ├── static/
+│   │   └── core/
+│   │       ├── js/
+│   │       │   └── main.js
+│   │       └── css/
+│   │           └── styles.css # (Can be minimal if relying heavily on Tailwind CDN)
+│   ├── urls.py
+│   └── views.py
+├── manage.py
+└── requirements.txt
+└── .replit # (Replit specific file - often auto-generated)
+└── replit.nix # (Replit specific file - often auto-generated, ensures dependencies like Pango/Cairo for WeasyPrint)
+Use code with caution.
+3. fitness_planner/settings.py (Django Settings - Partial)
+Ensure your core app is added and static files are configured.
+# fitness_planner/settings.py
+import os
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-your-secret-key-here' # Replace with a real secret key if deploying seriously
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True # Keep True for Replit development, set False for production
+
+# --- IMPORTANT FOR REPLIT / ONLINE HOSTING ---
+ALLOWED_HOSTS = ['*'] # Allows Replit domain and any other potential preview domains
+CSRF_TRUSTED_ORIGINS = ['https://*.replit.dev'] # Trust requests from Replit domains
+# ---------------------------------------------
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'core', # Add our app
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', # Important for POST requests
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'fitness_planner.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'], # Optional: project-level templates
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'fitness_planner.wsgi.application'
+
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+# SQLite is fine for this simple project and works easily on Replit
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# Password validation
+# ... (Keep default password validators)
+
+# Internationalization
+# ... (Keep default language/time zone)
+
+# --- Static files (CSS, JavaScript, Images) ---
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+STATIC_URL = 'static/'
+
+# Add this line to tell Django where to find static files in development
+STATICFILES_DIRS = [
+    BASE_DIR / "static", # Optional: project-level static files
+    BASE_DIR / "core" / "static", # To find core/static files
+]
+
+# Use this in production after running collectstatic
+# STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
+# -------------------------------------------------
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Optional: Configure logging if needed
+Use code with caution.
+Python
+4. fitness_planner/urls.py (Project URLs)
+Main URL routing.
+# fitness_planner/urls.py
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('core.urls')), # Include URLs from our 'core' app
+]
+Use code with caution.
+Python
+5. core/urls.py (App URLs)
+URLs specific to the core app.
+# core/urls.py
+from django.urls import path
+from . import views
+
+app_name = 'core' # Optional: Namespace for URLs
+
+urlpatterns = [
+    path('', views.landing_page, name='landing_page'),
+    path('generate-plan/', views.generate_plan_view, name='generate_plan'),
+    # No separate /conversation or /download URLs needed if handled by JS and generate_plan
+]
+Use code with caution.
+Python
+6. core/views.py (Backend Logic)
+Handles requests, processes data, generates PDF.
+# core/views.py
+from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt # Use carefully, only if needed for simple JS fetch
+from django.views.decorators.http import require_POST
+import json
+from weasyprint import HTML, CSS # Import WeasyPrint
+
+# --- Placeholder for AI/Rule-Based Logic ---
+def create_fitness_plan(answers):
+    """
+    Generates a fitness plan structure based on user answers.
+    Replace this with more sophisticated logic.
+    """
+    plan_data = {
+        'metadata': answers,
+        'plan_title': "Your Personalized Fitness Plan",
+        'introduction': f"Hi there! Based on your goal ({answers.get('goal', 'Not specified')}) and preferences, here's a plan to get you started.",
+        'duration_weeks': 4, # Example
+        'weekly_schedule': {}, # To be populated
+        'workouts': {}, # To be populated
+        'diet_guidelines': [
+            "Drink plenty of water throughout the day.",
+            "Focus on whole foods: lean proteins, vegetables, fruits, whole grains.",
+            "Limit processed foods, sugary drinks, and excessive saturated fats.",
+            "Adjust portion sizes based on your activity level and goals.",
+        ],
+        'tips': [
+            "Consistency is key! Stick to your schedule as much as possible.",
+            "Listen to your body. Rest when you need to.",
+            "Warm-up before each workout and cool-down afterwards.",
+            "Focus on proper form over lifting heavy weight.",
+            "Stay motivated! Track your progress and celebrate small wins.",
+        ],
+    }
+
+    # Example: Simple logic based on goal and days
+    goal = answers.get('goal', 'general').lower()
+    days = int(answers.get('days', 3))
+    level = answers.get('level', 'beginner').lower()
+    preference = answers.get('preference', 'home').lower()
+
+    # Basic workout structure (Replace with much more detail!)
+    if 'muscle' in goal:
+        plan_data['workouts']['Workout A'] = [
+            {'name': 'Squats' if preference == 'gym' else 'Bodyweight Squats', 'sets': 3, 'reps': '8-12'},
+            {'name': 'Bench Press' if preference == 'gym' else 'Push-ups', 'sets': 3, 'reps': '8-12'},
+            {'name': 'Rows' if preference == 'gym' else 'Resistance Band Rows', 'sets': 3, 'reps': '10-15'},
+        ]
+        plan_data['workouts']['Workout B'] = [
+            {'name': 'Deadlifts' if preference == 'gym' else 'Glute Bridges', 'sets': 3, 'reps': '6-10'},
+            {'name': 'Overhead Press' if preference == 'gym' else 'Pike Push-ups', 'sets': 3, 'reps': '8-12'},
+            {'name': 'Pull-ups/Lat Pulldowns' if preference == 'gym' else 'Inverted Rows / Band Pull-aparts', 'sets': 3, 'reps': 'As many as possible (AMRAP) or 10-15'},
+        ]
+        schedule = { 'Monday': 'Workout A', 'Tuesday': 'Rest', 'Wednesday': 'Workout B', 'Thursday': 'Rest', 'Friday': 'Workout A', 'Saturday': 'Rest', 'Sunday': 'Rest'}
+        if days == 5:
+             schedule = { 'Monday': 'Workout A', 'Tuesday': 'Workout B', 'Wednesday': 'Rest', 'Thursday': 'Workout A', 'Friday': 'Workout B', 'Saturday': 'Cardio/Active Recovery', 'Sunday': 'Rest'}
+        plan_data['weekly_schedule'] = schedule
+
+    elif 'weight' in goal:
+         plan_data['workouts']['Full Body HIIT'] = [
+            {'name': 'Jumping Jacks', 'sets': 1, 'reps': '60s'},
+            {'name': 'High Knees', 'sets': 1, 'reps': '45s'},
+            {'name': 'Burpees', 'sets': 3, 'reps': '30s work / 30s rest'},
+            {'name': 'Mountain Climbers', 'sets': 3, 'reps': '30s work / 30s rest'},
+            {'name': 'Alternating Lunges', 'sets': 3, 'reps': '45s work / 15s rest'},
+         ]
+         schedule = { 'Monday': 'Full Body HIIT', 'Tuesday': 'Active Recovery (Walk/Stretch)', 'Wednesday': 'Full Body HIIT', 'Thursday': 'Rest', 'Friday': 'Full Body HIIT', 'Saturday': 'Longer Cardio (Optional)', 'Sunday': 'Rest'}
+         if days >= 4:
+             schedule['Thursday'] = 'Moderate Cardio (e.g., Jogging)'
+         plan_data['weekly_schedule'] = schedule
+
+    else: # General Fitness
+        plan_data['workouts']['Full Body Circuit'] = [
+            {'name': 'Bodyweight Squats', 'sets': 3, 'reps': '15-20'},
+            {'name': 'Push-ups (on knees if needed)', 'sets': 3, 'reps': 'AMRAP'},
+            {'name': 'Walking Lunges', 'sets': 3, 'reps': '10-12 per leg'},
+            {'name': 'Plank', 'sets': 3, 'reps': '30-60s hold'},
+            {'name': 'Glute Bridges', 'sets': 3, 'reps': '15-20'},
+        ]
+        schedule = { 'Monday': 'Full Body Circuit', 'Tuesday': 'Rest', 'Wednesday': 'Cardio (30 min)', 'Thursday': 'Rest', 'Friday': 'Full Body Circuit', 'Saturday': 'Active Recovery / Fun Activity', 'Sunday': 'Rest'}
+        if days < 3:
+            schedule = {'Monday': 'Full Body Circuit', 'Wednesday': 'Cardio (30 min)', 'Friday': 'Rest'} # Adjust for fewer days
+        plan_data['weekly_schedule'] = schedule
+
+
+    # Add more detailed logic here based on level, restrictions etc.
+    # This is highly simplified!
+
+    return plan_data
+
+# --- Django Views ---
+
+def landing_page(request):
+    """Serves the main landing/conversation page."""
+    return render(request, 'core/landing.html')
+
+@csrf_exempt # Simplifies fetch from basic JS. For production, use proper CSRF handling.
+@require_POST # Ensure this view only accepts POST requests
+def generate_plan_view(request):
+    """
+    Receives user answers via POST, generates plan data,
+    renders HTML template, converts to PDF, and returns PDF.
+    """
+    try:
+        # 1. Get data from frontend JS
+        data = json.loads(request.body)
+        user_answers = data.get('answers', {})
+
+        # 2. Generate the structured plan data using our logic
+        plan_context = create_fitness_plan(user_answers)
+
+        # --- PDF Generation using WeasyPrint ---
+        # 3. Render the HTML template with the plan data
+        html_string = render_to_string('core/plan_template.html', {'plan': plan_context})
+
+        # 4. Use WeasyPrint to create the PDF from HTML
+        # Base URL might be needed for static assets if linked in template
+        # base_url = request.build_absolute_uri('/')
+        pdf_file = HTML(string=html_string).write_pdf()
+        # ----------------------------------------
+
+        # 5. Create the HTTP Response containing the PDF
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="your_fitness_plan.pdf"' # Makes browser download it
+        response['Content-Transfer-Encoding'] = 'binary'
+
+        # Optional: Log anonymized data here if implementing admin panel later
+
+        return response
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data received.'}, status=400)
+    except Exception as e:
+        print(f"Error generating plan: {e}") # Log error for debugging
+        # In production, provide a more user-friendly error
+        return JsonResponse({'error': f'An error occurred while generating your plan: {e}'}, status=500)
+Use code with caution.
+Python
+7. core/templates/core/landing.html (Frontend Page)
+Main HTML with Tailwind CSS and placeholders for interaction.
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fitness Planner</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link to your custom CSS if needed -->
+    <!-- <link rel="stylesheet" href="{% static 'core/css/styles.css' %}"> -->
+    <style>
+        /* Basic custom styles */
+        body {
+            font-family: 'Inter', sans-serif; /* Example font */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #conversationBox {
+            max-height: 300px;
+            overflow-y: auto;
+            scroll-behavior: smooth; /* Auto scroll to bottom */
+        }
+        /* Simple pulsing animation for listening state */
+        .listening-pulse {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+         /* Style scrollbar */
+        #conversationBox::-webkit-scrollbar { width: 8px; }
+        #conversationBox::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px;}
+        #conversationBox::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.4); border-radius: 4px;}
+        #conversationBox::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
+    </style>
+     <!-- Include Google Font (Optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-2xl bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl text-center">
+
+        <div id="initialScreen">
+            <!-- Placeholder for Avatar -->
+            <!-- <img src="{% static 'core/images/avatar.png' %}" alt="Trainer Avatar" class="w-24 h-24 mx-auto mb-4 rounded-full border-2 border-white/50"> -->
+             <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-4xl shadow-lg border-2 border-white/50">
+                AI
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-white">Meet Your AI Fitness Coach</h1>
+            <p class="text-lg mb-6 text-indigo-100">Ready to crush your fitness goals? Let's chat and create your personalized plan.</p>
+            <button id="startButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                Start Talking!
+            </button>
+        </div>
+
+        <div id="conversationScreen" class="hidden">
+             <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-2xl shadow-lg border-2 border-white/50" id="avatarIndicator">
+                AI
+            </div>
+            <div id="conversationBox" class="bg-black/20 rounded-lg p-4 text-left mb-4 h-64 overflow-y-auto border border-white/20 shadow-inner">
+                <!-- Conversation messages appear here -->
+            </div>
+
+            <div id="statusIndicator" class="text-indigo-200 h-6 mb-4">
+                <!-- Status messages like "Listening...", "Processing..." -->
+            </div>
+
+            <div id="processingIndicator" class="hidden my-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                <p class="text-indigo-100 mt-2">Generating your plan...</p>
+            </div>
+
+            <div id="downloadLinkContainer" class="hidden mt-6">
+                <p class="text-xl font-semibold mb-3 text-green-300">Your plan is ready!</p>
+                <a id="downloadLink" href="#" download="your_fitness_plan.pdf" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                    Download My Plan (PDF)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the JavaScript file -->
+    <script src="{% static 'core/js/main.js' %}"></script>
+
+</body>
+</html>
+Use code with caution.
+Html
+8. core/templates/core/plan_template.html (PDF Layout)
+HTML structure that WeasyPrint will convert to PDF.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ plan.plan_title }}</title>
+    <style>
+        /* Basic CSS for PDF - WeasyPrint supports CSS fairly well */
+        @page {
+            size: A4;
+            margin: 1.5cm; /* Add margins to the page */
+        }
+        body {
+            font-family: sans-serif; /* Use common fonts */
+            line-height: 1.5;
+            color: #333;
+        }
+        h1 {
+            color: #4a5568; /* Tailwind gray-700 */
+            border-bottom: 2px solid #718096; /* Tailwind gray-500 */
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h2 {
+            color: #4a5568;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #cbd5e0; /* Tailwind gray-300 */
+            padding-bottom: 3px;
+        }
+        h3 {
+            color: #2d3748; /* Tailwind gray-800 */
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #e2e8f0; /* Tailwind gray-200 */
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f7fafc; /* Tailwind gray-100 */
+            font-weight: bold;
+        }
+        .workout-item {
+            margin-bottom: 8px;
+        }
+        .workout-item strong {
+             display: inline-block;
+             min-width: 150px; /* Adjust as needed */
+        }
+        .intro, .section {
+            margin-bottom: 25px;
+            page-break-inside: avoid; /* Try to keep sections together */
+        }
+        .metadata {
+             font-size: 0.9em;
+             color: #718096;
+             margin-bottom: 20px;
+             border: 1px dashed #cbd5e0;
+             padding: 10px;
+             background-color: #f7fafc;
+        }
+        .metadata p { margin: 2px 0; }
+
+    </style>
+</head>
+<body>
+
+    <h1>{{ plan.plan_title }}</h1>
+
+    <div class="intro">
+        <p>{{ plan.introduction }}</p>
+    </div>
+
+    <div class="metadata section">
+        <h2>Your Inputs Summary</h2>
+        <p><strong>Goal:</strong> {{ plan.metadata.goal|default:"N/A" }}</p>
+        <p><strong>Days per week:</strong> {{ plan.metadata.days|default:"N/A" }}</p>
+        <p><strong>Preference:</strong> {{ plan.metadata.preference|default:"N/A" }}</p>
+        <p><strong>Level:</strong> {{ plan.metadata.level|default:"N/A" }}</p>
+        <p><strong>Restrictions:</strong> {{ plan.metadata.restrictions|default:"None" }}</p>
+        <p><strong>Style:</strong> {{ plan.metadata.style|default:"N/A" }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Plan Overview</h2>
+        <p><strong>Duration:</strong> {{ plan.duration_weeks }} weeks</p>
+        <h3>Weekly Schedule</h3>
+        {% if plan.weekly_schedule %}
+            <table>
+                <thead>
+                    <tr>
+                        {% for day in plan.weekly_schedule.keys %}
+                            <th>{{ day }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for activity in plan.weekly_schedule.values %}
+                            <td>{{ activity }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        {% else %}
+            <p>Weekly schedule details not generated.</p>
+        {% endif %}
+    </div>
+
+     <div class="section">
+        <h2>Workouts</h2>
+        {% if plan.workouts %}
+            {% for workout_name, exercises in plan.workouts.items %}
+                <h3>{{ workout_name }}</h3>
+                {% if exercises %}
+                     <ul>
+                    {% for exercise in exercises %}
+                        <li class="workout-item">
+                           <strong>{{ exercise.name }}:</strong> Sets: {{ exercise.sets }}, Reps: {{ exercise.reps }}{% if exercise.rest %} Rest: {{ exercise.rest }}{% endif %}
+                        </li>
+                    {% endfor %}
+                     </ul>
+                {% else %}
+                    <p>No specific exercises listed for this workout.</p>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>Workout details not generated.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Basic Diet Guidelines</h2>
+        <ul>
+            {% for guideline in plan.diet_guidelines %}
+                <li>{{ guideline }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Tips for Success</h2>
+        <ul>
+            {% for tip in plan.tips %}
+                <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>
+Use code with caution.
+Html
+9. core/static/core/js/main.js (Frontend Voice Interaction)
+Handles Web Speech API, conversation flow, and backend communication.
+// core/static/core/js/main.js
+
+document.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('startButton');
+    const initialScreen = document.getElementById('initialScreen');
+    const conversationScreen = document.getElementById('conversationScreen');
+    const conversationBox = document.getElementById('conversationBox');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const downloadLinkContainer = document.getElementById('downloadLinkContainer');
+    const downloadLink = document.getElementById('downloadLink');
+    const processingIndicator = document.getElementById('processingIndicator');
+    const avatarIndicator = document.getElementById('avatarIndicator');
+
+    // --- Web Speech API Setup ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
+    const speechSynthesis = window.speechSynthesis;
+
+    let recognition;
+    let isListening = false;
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let conversationActive = false;
+
+    const questions = [
+        { id: 'welcome', text: "Welcome! I'm your AI fitness coach. Let's create a plan tailored just for you. Are you ready to start?", triggerListen: false }, // Initial greeting
+        { id: 'goal', text: "Great! First, what's your primary fitness goal? For example: lose weight, build muscle, or general fitness?", requiresAnswer: true },
+        { id: 'days', text: "Got it. How many days per week can you realistically commit to training?", requiresAnswer: true, answerType: 'number' },
+        { id: 'preference', text: "Okay. Do you prefer working out at home or in a gym?", requiresAnswer: true },
+        { id: 'level', text: "What's your current fitness level? Are you a beginner, intermediate, or advanced?", requiresAnswer: true },
+        { id: 'restrictions', text: "Do you have any injuries or physical restrictions I should be aware of? If not, just say 'none'.", requiresAnswer: true },
+        { id: 'style', text: "Finally, do you have a preferred training style, like Bodybuilding, HIIT, Strength Training, Yoga, or something else? If not, say 'no preference'.", requiresAnswer: true },
+        { id: 'confirmation', text: "Awesome! I have all the information I need. I'll generate your personalized plan now. This might take a moment.", triggerListen: false }
+    ];
+
+    if (!SpeechRecognition || !speechSynthesis) {
+        alert("Sorry, your browser doesn't support the Web Speech API. Try Chrome or Edge.");
+        startButton.disabled = true;
+        startButton.textContent = "Browser Not Supported";
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = false; // Process speech after a pause
+    recognition.lang = 'en-US';
+    recognition.interimResults = false; // We only want final results
+    recognition.maxAlternatives = 1;
+
+    // --- Core Functions ---
+
+    function speak(text, callback) {
+        addMessage('AI', text);
+        statusIndicator.textContent = 'AI is speaking...';
+        avatarIndicator.classList.remove('listening-pulse');
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.pitch = 1;
+        utterance.rate = 1;
+        // You could try different voices if available:
+        // const voices = speechSynthesis.getVoices();
+        // utterance.voice = voices.find(voice => voice.lang === 'en-US' && voice.name.includes('Google'));
+
+        utterance.onend = () => {
+            console.log('Speech finished.');
+            statusIndicator.textContent = ''; // Clear status after speaking
+            if (callback) {
+                callback(); // Trigger next action (like listening)
+            }
+        };
+        utterance.onerror = (event) => {
+            console.error('Speech synthesis error:', event);
+            statusIndicator.textContent = 'Speech error.';
+             // If speech fails, still try to proceed? Or stop? Decide based on UX.
+            if (callback) {
+                // Maybe add a slight delay before trying to listen anyway
+                setTimeout(callback, 500);
+             }
+        };
+
+        speechSynthesis.cancel(); // Cancel any previous speech
+        speechSynthesis.speak(utterance);
+    }
+
+    function listen() {
+        if (isListening) return; // Prevent starting multiple times
+
+        isListening = true;
+        statusIndicator.textContent = 'Listening...';
+        avatarIndicator.classList.add('listening-pulse');
+        console.log('Starting recognition...');
+        try {
+             recognition.start();
+        } catch(e) {
+             console.error("Recognition start error:", e);
+             // Might happen if already started, try to reset state
+             isListening = false;
+             statusIndicator.textContent = 'Mic start error. Try again?';
+             // Maybe add a button to retry listening here
+        }
+    }
+
+    function processAnswer(transcript) {
+        addMessage('User', transcript);
+        const currentQuestion = questions[currentQuestionIndex];
+
+        if (currentQuestion && currentQuestion.requiresAnswer) {
+             // Basic validation/cleaning (can be improved)
+            let answer = transcript.trim().toLowerCase();
+            if (currentQuestion.answerType === 'number') {
+                const num = answer.match(/\d+/); // Extract first number found
+                answer = num ? num[0] : 'unknown'; // Store number as string
+            }
+             // You could add more specific keyword matching here if needed
+             // e.g., check if answer is 'home' or 'gym' for preference question
+
+            userAnswers[currentQuestion.id] = answer;
+            console.log(`Answer for ${currentQuestion.id}:`, answer);
+        }
+         currentQuestionIndex++; // Move to next question/step
+         askNextQuestion();
+    }
+
+    function askNextQuestion() {
+        if (currentQuestionIndex < questions.length) {
+            const nextQuestion = questions[currentQuestionIndex];
+            if (nextQuestion.triggerListen !== false) { // Default is to listen after speaking
+                speak(nextQuestion.text, listen); // Speak the question, then listen
+            } else {
+                 speak(nextQuestion.text, () => { // Speak message, then potentially move on
+                    if (nextQuestion.id === 'confirmation') {
+                        // If it's the confirmation message, trigger plan generation
+                        generatePlan();
+                    } else if (nextQuestion.id === 'welcome') {
+                         // After welcome message, automatically ask the first real question
+                         currentQuestionIndex++;
+                         askNextQuestion();
+                    }
+                 });
+            }
+        } else {
+            // Should be handled by the 'confirmation' step now
+            console.log('Conversation technically finished, should trigger generation.');
+             // generatePlan(); // Fallback if confirmation step fails
+        }
+    }
+
+    function addMessage(sender, text) {
+        const messageElement = document.createElement('p');
+        messageElement.classList.add('mb-2');
+        messageElement.innerHTML = `<strong class="${sender === 'AI' ? 'text-indigo-300' : 'text-green-300'}">${sender}:</strong> ${text}`;
+        conversationBox.appendChild(messageElement);
+        // Scroll to the bottom
+        conversationBox.scrollTop = conversationBox.scrollHeight;
+    }
+
+    async function generatePlan() {
+        conversationActive = false;
+        isListening = false;
+        statusIndicator.textContent = 'Generating plan...';
+        processingIndicator.classList.remove('hidden');
+        avatarIndicator.classList.remove('listening-pulse');
+        console.log("Sending answers to backend:", userAnswers);
+
+        try {
+            const response = await fetch('/generate-plan/', { // Ensure this matches your Django URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // CSRF Token handling - @csrf_exempt simplifies, but for prod use:
+                    // 'X-CSRFToken': getCookie('csrftoken') // Need a function to get CSRF token
+                },
+                body: JSON.stringify({ answers: userAnswers })
+            });
+
+            processingIndicator.classList.add('hidden');
+
+            if (response.ok && response.headers.get('Content-Type')?.includes('application/pdf')) {
+                 statusIndicator.textContent = 'Plan generated successfully!';
+                 const blob = await response.blob();
+                 const url = window.URL.createObjectURL(blob);
+                 downloadLink.href = url;
+                 // downloadLink.download = "your_fitness_plan.pdf"; // Already set in HTML
+                 downloadLinkContainer.classList.remove('hidden');
+            } else {
+                // Handle errors (e.g., server error, non-PDF response)
+                const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+                console.error('Plan generation failed:', response.status, errorData);
+                statusIndicator.textContent = `Error: ${errorData.error || 'Could not generate plan.'}`;
+                addMessage('System', `Error generating plan: ${errorData.error || response.statusText}`);
+            }
+
+        } catch (error) {
+            processingIndicator.classList.add('hidden');
+            console.error('Network or fetch error:', error);
+            statusIndicator.textContent = 'Network error. Could not reach server.';
+             addMessage('System', 'Network error. Please check your connection and try again.');
+        }
+    }
+
+    // --- Event Listeners ---
+
+    startButton.addEventListener('click', () => {
+        initialScreen.classList.add('hidden');
+        conversationScreen.classList.remove('hidden');
+        conversationActive = true;
+        // Request microphone permission first
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((stream) => {
+                console.log('Mic permission granted.');
+                 stream.getTracks().forEach(track => track.stop()); // Stop track immediately, we only need permission
+                 currentQuestionIndex = 0; // Start from the welcome message
+                 askNextQuestion();
+            })
+            .catch((err) => {
+                console.error('Mic permission denied:', err);
+                addMessage('System', 'Microphone access denied. Please allow microphone access in your browser settings to use the voice features.');
+                statusIndicator.textContent = 'Microphone access needed.';
+                conversationActive = false;
+                 // Maybe show the start screen again or provide instructions
+                 initialScreen.classList.remove('hidden');
+                 conversationScreen.classList.add('hidden');
+            });
+    });
+
+    recognition.onresult = (event) => {
+        isListening = false; // Stop listening state once result is received
+        avatarIndicator.classList.remove('listening-pulse');
+        const transcript = event.results[0][0].transcript;
+        console.log('Speech recognized:', transcript);
+        statusIndicator.textContent = 'Processing your answer...';
+        processAnswer(transcript);
+    };
+
+    recognition.onerror = (event) => {
+        isListening = false;
+        avatarIndicator.classList.remove('listening-pulse');
+        console.error('Speech recognition error:', event.error);
+        let errorMsg = `Speech error: ${event.error}.`;
+        if (event.error === 'no-speech') {
+            errorMsg = "Didn't hear anything. Please speak clearly.";
+        } else if (event.error === 'audio-capture') {
+            errorMsg = "Audio capture error. Check your microphone.";
+        } else if (event.error === 'not-allowed') {
+            errorMsg = "Microphone access denied or blocked.";
+            conversationActive = false; // Stop conversation if permission lost
+        }
+        statusIndicator.textContent = errorMsg;
+        addMessage('System', errorMsg + " Let's try that question again.");
+         // Retry listening for the same question after a short delay?
+         setTimeout(() => {
+             if (conversationActive && questions[currentQuestionIndex]?.requiresAnswer) {
+                 speak("Sorry, I didn't catch that. " + questions[currentQuestionIndex].text, listen);
+             } else if (conversationActive) {
+                 // If it wasn't a question needing an answer, maybe just proceed? Or wait?
+                 statusIndicator.textContent = "There was an issue, please try restarting the conversation if problems persist.";
+             }
+         }, 1500);
+
+    };
+
+    recognition.onend = () => {
+         console.log('Recognition ended.');
+        // If recognition ends unexpectedly (e.g., short silence before user speaks fully),
+        // and we are still expecting an answer, we might want to restart it.
+        // However, the current logic triggers listening *after* speaking,
+        // and processes result in onresult, so automatic restart here might interfere.
+        // Only restart if 'isListening' is true and no result came? Needs careful state management.
+         if (isListening) {
+             console.log("Recognition ended while 'isListening' was true, possibly unexpectedly.");
+             // Maybe prompt user to speak again? For now, let onerror handle timeouts/no-speech.
+             // isListening = false; // Ensure state is reset
+             // statusIndicator.textContent = "Listening timed out. Try speaking again.";
+         }
+    };
+
+    // --- Utility (if needed for CSRF) ---
+    // function getCookie(name) {
+    //     let cookieValue = null;
+    //     if (document.cookie && document.cookie !== '') {
+    //         const cookies = document.cookie.split(';');
+    //         for (let i = 0; i < cookies.length; i++) {
+    //             const cookie = cookies[i].trim();
+    //             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     return cookieValue;
+    // }
+
+});
+Use code with caution.
+JavaScript
+How to Use This with Replit:
+Sign up/Log in: Go to Replit.com.
+Create a New Repl: Click "+ Create Repl".
+Choose Template: Search for and select the "Django" template. This sets up Python, Django basics, and often handles system dependencies via replit.nix.
+Copy Files:
+Replace the contents of requirements.txt with the one provided above. Replit should prompt you to install/update packages.
+Go into the fitness_planner (or similarly named main project folder) and update settings.py and urls.py.
+Create a new Django app (Replit might have a tool, or use the Shell tab): python manage.py startapp core
+Copy core/views.py and core/urls.py into the new core app folder.
+Create the templates/core and static/core/js, static/core/css directory structures inside the core app.
+Copy landing.html and plan_template.html into core/templates/core/.
+Copy main.js into core/static/core/js/.
+Make sure core is added to INSTALLED_APPS in settings.py.
+Make sure STATICFILES_DIRS is set correctly in settings.py to find your static files.
+Configure Run Command: In the .replit file (visible under hidden files), ensure the run command is something like: python manage.py runserver 0.0.0.0:8000
+Install WeasyPrint Dependencies (if needed): The Django template on Replit might automatically include necessary system libraries (like Pango, Cairo, Fontconfig) via the replit.nix file. If you get errors about missing libraries when generating the PDF, you may need to add them to replit.nix. Search the Replit community/docs for "WeasyPrint Nix" for examples. A common set looks like:
+# Inside replit.nix, within the deps = [ ... ]; block
+pkgs.python310Packages.weasyprint # Or the appropriate python version
+pkgs.pango
+pkgs.cairo
+pkgs.fontconfig
+pkgs.libxml2
+pkgs.libjpeg
+Use code with caution.
+Nix
+Run: Click the "Run ▶" button at the top. Replit will install dependencies and start the Django development server. A web preview window should appear.
+Test: Interact with the web application in the preview window. Allow microphone access when prompted.
+Important Considerations:
+Web Speech API Compatibility: This relies heavily on the browser. It works best in Chrome and Edge. Firefox has limited support, and Safari's implementation can differ.
+Error Handling: The provided JavaScript has basic error handling, but robust real-world applications need more. Network issues, API failures, speech recognition errors all need graceful handling.
+AI Logic: The create_fitness_plan function in views.py is extremely basic. This is where the core "intelligence" needs to be built, either with more complex Python rules or by integrating an LLM like GPT via its API (which adds cost and complexity).
+Security: Using @csrf_exempt is okay for quick prototyping but should be replaced with proper CSRF token handling in a production environment. ALLOWED_HOSTS = ['*'] and DEBUG = True are also unsafe for production.
+WeasyPrint Dependencies: Getting system libraries right for WeasyPrint can sometimes be tricky, even on platforms like Replit. Be prepared to potentially debug the Nix configuration (replit.nix).
+Design: Tailwind provides a good base, but making it truly "eyecatching" involves more detailed CSS, potentially custom fonts, icons, and the avatar graphic.
+This gives you a runnable starting point in a cloud environment. You can edit the code directly in Replit's browser interface and see the changes when you re-run the server. Good luck!
