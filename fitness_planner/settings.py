@@ -37,6 +37,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CSRF trusted origins - allows cross-site requests from any replit.dev domain
+CSRF_TRUSTED_ORIGINS = ['https://*.replit.dev']
+
 ROOT_URLCONF = 'fitness_planner.urls'
 
 TEMPLATES = [

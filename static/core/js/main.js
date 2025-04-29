@@ -212,22 +212,95 @@ document.addEventListener('DOMContentLoaded', function() {
     function speakText(text, callback) {
         const utterance = new SpeechSynthesisUtterance(text);
         
-        // Set a female voice if available
-        const voices = speechSynthesis.getVoices();
-        const femaleVoice = voices.find(voice => voice.name.includes('female') || voice.name.includes('Female'));
-        if (femaleVoice) {
-            utterance.voice = femaleVoice;
-        }
+        // Preload voices
+        speechSynthesis.getVoices();
         
-        // Set language for the utterance
+        // Set voice properties
         utterance.lang = voiceLanguages[currentLanguage];
+        utterance.pitch = 1.2;          // Higher pitch for more feminine voice (1.0 is default)
+        utterance.rate = 0.95;          // Slightly slower rate for better clarity
+        utterance.volume = 1.0;         // Full volume
         
-        // Execute callback when speech is done
-        if (callback) {
-            utterance.onend = callback;
-        }
+        // Try to find the best female voice for the current language
+        window.setTimeout(() => {
+            // Get all available voices
+            const voices = speechSynthesis.getVoices();
+            console.log("Available voices:", voices.map(v => v.name));
+            
+            // Try to find a female voice for the current language
+            let selectedVoice = null;
+            
+            // First priority: female voice that matches the language
+            selectedVoice = voices.find(voice => 
+                (voice.name.toLowerCase().includes('female') || 
+                 voice.name.toLowerCase().includes('woman') ||
+                 voice.name.toLowerCase().includes('girl')) && 
+                voice.lang.startsWith(utterance.lang.split('-')[0])
+            );
+            
+            // Second priority: any female voice
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.name.toLowerCase().includes('female') || 
+                    voice.name.toLowerCase().includes('woman') ||
+                    voice.name.toLowerCase().includes('girl')
+                );
+            }
+            
+            // Third priority: just use the first voice for the language
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.startsWith(utterance.lang.split('-')[0])
+                );
+            }
+            
+            if (selectedVoice) {
+                console.log("Selected voice:", selectedVoice.name);
+                utterance.voice = selectedVoice;
+            }
+            
+            // Make the text more friendly - add conversational touches
+            let friendlyText = text;
+            
+            // Only add friendly elements for questions, not for feedback statements
+            if (text.endsWith("?")) {
+                // Add friendly intros based on language
+                const randomIntro = Math.random() > 0.5;
+                
+                if (currentLanguage === 'en') {
+                    if (currentQuestionIndex === 0) {
+                        friendlyText = "Hi there! " + friendlyText;
+                    } else if (randomIntro) {
+                        const intros = ["Great! ", "Wonderful! ", "Awesome! ", "Perfect! ", "Thanks! "];
+                        friendlyText = intros[Math.floor(Math.random() * intros.length)] + friendlyText;
+                    }
+                } else if (currentLanguage === 'az') {
+                    if (currentQuestionIndex === 0) {
+                        friendlyText = "Salam! " + friendlyText;
+                    } else if (randomIntro) {
+                        const intros = ["Əla! ", "Gözəl! ", "Təşəkkürlər! "];
+                        friendlyText = intros[Math.floor(Math.random() * intros.length)] + friendlyText;
+                    }
+                } else if (currentLanguage === 'tr') {
+                    if (currentQuestionIndex === 0) {
+                        friendlyText = "Merhaba! " + friendlyText;
+                    } else if (randomIntro) {
+                        const intros = ["Harika! ", "Mükemmel! ", "Teşekkürler! "];
+                        friendlyText = intros[Math.floor(Math.random() * intros.length)] + friendlyText;
+                    }
+                }
+            }
+            
+            utterance.text = friendlyText;
+            
+            // Execute callback when speech is done
+            if (callback) {
+                utterance.onend = callback;
+            }
+            
+            speechSynthesis.speak(utterance);
+        }, 100);
         
-        speechSynthesis.speak(utterance);
         return utterance;
     }
 
