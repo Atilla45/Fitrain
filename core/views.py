@@ -5,7 +5,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 import tempfile
+from datetime import datetime
 from weasyprint import HTML, CSS
+
+# Import the AI assistant functions
+from core.ai_assistant import process_voice_input, get_next_question, generate_voice_response
 
 # --- Placeholder for AI/Rule-Based Logic ---
 def create_fitness_plan(answers):
@@ -265,12 +269,80 @@ def generate_plan_view(request):
             'pdfLink': '/download-pdf/'
         }
         
+        # Convert the enhanced schedule to a proper format for the template
+        enhanced_schedule_data = []
+        for day, workout in fitness_plan['weekly_schedule'].items():
+            day_data = {
+                "day": day,
+                "workout": workout,
+                "focus": "",
+                "duration": "45-60 min" if "Rest" not in workout else "N/A",
+                "exercises": []
+            }
+            
+            # Determine focus and exercises based on workout type
+            workout_type = workout.lower()
+            if "upper" in workout_type:
+                day_data["focus"] = "Upper Body Strength"
+                day_data["exercises"] = upper_body_exercises
+            elif "lower" in workout_type:
+                day_data["focus"] = "Lower Body Strength"
+                day_data["exercises"] = lower_body_exercises
+            elif "hiit" in workout_type:
+                day_data["focus"] = "High Intensity Interval Training"
+                day_data["exercises"] = cardio_exercises + core_exercises[:2]
+            elif "circuit" in workout_type:
+                day_data["focus"] = "Full Body Circuit"
+                day_data["exercises"] = upper_body_exercises[:2] + lower_body_exercises[:2] + core_exercises[:1]
+            elif "cardio" in workout_type:
+                day_data["focus"] = "Cardiovascular Endurance"
+                day_data["exercises"] = cardio_exercises
+            elif "rest" in workout_type or "recovery" in workout_type:
+                day_data["focus"] = "Recovery"
+                day_data["duration"] = "N/A"
+                day_data["exercises"] = []
+            else:
+                # Try to match with the workout exercises from the plan
+                if workout in fitness_plan['workouts']:
+                    day_data["focus"] = f"{workout} Workout"
+                    
+                    # Convert the workout exercises to the enhanced format
+                    workout_exercises = []
+                    for ex in fitness_plan['workouts'][workout]:
+                        enhanced_ex = {
+                            "name": ex['name'],
+                            "sets": ex['sets'],
+                            "reps": ex['reps'],
+                            "rest": f"{ex.get('rest_between_sets_seconds', 60)}s",
+                            "description": "Perform with proper form and control throughout the movement."
+                        }
+                        workout_exercises.append(enhanced_ex)
+                    
+                    day_data["exercises"] = workout_exercises
+                else:
+                    # Default
+                    day_data["focus"] = "General Fitness"
+                    day_data["exercises"] = []
+            
+            enhanced_schedule_data.append(day_data)
+        
+        # Create an enhanced version of the plan data for PDF generation
+        enhanced_pdf_data = fitness_plan.copy()
+        enhanced_pdf_data['enhanced_schedule'] = enhanced_schedule_data
+        
+        # Add additional data for PDF rendering
+        enhanced_pdf_data['upper_body_exercises'] = upper_body_exercises
+        enhanced_pdf_data['lower_body_exercises'] = lower_body_exercises
+        enhanced_pdf_data['core_exercises'] = core_exercises
+        enhanced_pdf_data['cardio_exercises'] = cardio_exercises
+        enhanced_pdf_data['dietary_guidelines_detailed'] = dietary_guidelines
+        
         # Render the plan template to HTML (for PDF generation later)
-        html_string = render_to_string('core/plan_template.html', {'plan': fitness_plan})
+        html_string = render_to_string('core/plan_template.html', {'plan': enhanced_pdf_data})
         
         # Store the rendered HTML in the session for PDF download
         request.session['plan_html'] = html_string
-        request.session['plan_data'] = fitness_plan
+        request.session['plan_data'] = enhanced_pdf_data
         
         return JsonResponse({
             'success': True,
@@ -287,6 +359,64 @@ def generate_plan_view(request):
         }, status=400)
 
 
+@require_POST
+def process_voice(request):
+    """
+    Processes voice input and returns an AI-generated response.
+    This endpoint is called by the frontend JavaScript when using voice input.
+    """
+    try:
+        # Parse JSON data from the request
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON data'
+            }, status=400)
+        
+        # Extract data from the request
+        speech_text = data.get('text', '')
+        language = data.get('language', 'en')
+        conversation_context = data.get('context', None)
+        
+        # Check if we just need the next question (start of conversation)
+        if not speech_text and (not conversation_context or conversation_context.get('current_question', 0) == 0):
+            question, updated_context = get_next_question(language)
+            
+            # Generate a more engaging version of the question for voice
+            enhanced_question = generate_voice_response(question, language)
+            
+            return JsonResponse({
+                'success': True,
+                'text': enhanced_question,
+                'original_text': question,
+                'context': updated_context
+            })
+        
+        # Process the user's voice input with AI
+        response_text, updated_context = process_voice_input(speech_text, language, conversation_context)
+        
+        # Generate a more engaging version for voice output
+        enhanced_response = generate_voice_response(response_text, language)
+        
+        return JsonResponse({
+            'success': True,
+            'text': enhanced_response,
+            'original_text': response_text,
+            'context': updated_context
+        })
+    
+    except Exception as e:
+        import traceback
+        print(f"Error processing voice input: {str(e)}")
+        print(traceback.format_exc())
+        
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
 def download_pdf(request):
     """
     Generates and serves a PDF file of the fitness plan.
@@ -299,15 +429,52 @@ def download_pdf(request):
         if not html_string or not plan_data:
             return HttpResponse('No plan data found. Please generate a plan first.', status=400)
         
+        # Define custom CSS for PDF rendering
+        css_string = """
+            @page {
+                size: letter portrait;
+                margin: 1.5cm;
+                @top-right {
+                    content: "Page " counter(page) " of " counter(pages);
+                    font-size: 9pt;
+                    color: #777;
+                }
+                @bottom-left {
+                    content: "FitPlan Builder";
+                    font-size: 9pt;
+                    color: #777;
+                }
+                @bottom-right {
+                    content: "Generated on %s";
+                    font-size: 9pt;
+                    color: #777;
+                }
+            }
+            /* Ensure page breaks don't happen in the middle of important elements */
+            h2, h3, .exercise, .workout-box {
+                page-break-inside: avoid;
+            }
+            /* Add page break before major sections */
+            .page-break {
+                page-break-before: always;
+            }
+        """ % (str(datetime.now().strftime("%B %d, %Y")))
+        
         # Create a temporary file to store the PDF
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
-            # Generate the PDF from HTML
-            HTML(string=html_string).write_pdf(tmp.name)
+            # Generate the PDF from HTML with custom CSS
+            HTML(string=html_string).write_pdf(
+                tmp.name,
+                stylesheets=[CSS(string=css_string)]
+            )
             
             # Read the PDF file
             with open(tmp.name, 'rb') as pdf_file:
                 response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                filename = f"fitness_plan_{plan_data['metadata'].get('name', 'user')}.pdf"
+                user_name = plan_data['metadata'].get('name', '').replace(' ', '_').lower() or 'user'
+                goal = plan_data['metadata'].get('goal', 'fitness').lower()
+                level = plan_data['metadata'].get('level', 'beginner').lower()
+                filename = f"fitness_plan_{user_name}_{goal}_{level}.pdf"
                 response['Content-Disposition'] = f'attachment; filename="{filename}"'
                 return response
     except Exception as e:
