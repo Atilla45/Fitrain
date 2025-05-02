@@ -1,4 +1,5 @@
-modules = ["python-3.11", "postgresql-16"]
+modules = ["nodejs-20", "web", "python-3.11"]
+run = "python manage.py  runserver"
 
 [nix]
 channel = "stable-24_05"
@@ -6,10 +7,11 @@ packages = ["fontconfig", "ghostscript", "glib", "harfbuzz", "openssl", "pango",
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 fitness_planner.wsgi:application"]
+build = ["sh", "-c", "python manage.py collectstatic --noinput"]
 
 [workflows]
-runButton = "Project"
+runButton = "Django Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -28,6 +30,19 @@ author = "agent"
 task = "shell.exec"
 args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Django Server"
+author = 42144860
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python manage.py migrate"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python manage.py runserver 0.0.0.0:5000"
 
 [[ports]]
 localPort = 5000
