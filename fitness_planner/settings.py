@@ -66,11 +66,11 @@ WSGI_APPLICATION = 'fitness_planner.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('PGDATABASE'),
-        'USER': os.environ.get('PGUSER'),
-        'PASSWORD': os.environ.get('PGPASSWORD'),
-        'HOST': os.environ.get('PGHOST'),
-        'PORT': os.environ.get('PGPORT'),
+        'NAME': os.environ.get('REPLIT_POSTGRES_DB_NAME'),
+        'USER': os.environ.get('REPLIT_POSTGRES_USER'),
+        'PASSWORD': os.environ.get('REPLIT_POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('REPLIT_POSTGRES_HOST'),
+        'PORT': os.environ.get('REPLIT_POSTGRES_PORT'),
     }
 }
 
